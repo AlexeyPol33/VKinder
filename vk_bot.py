@@ -3,7 +3,7 @@ from tokens_file import vk_token, access_token
 import datetime
 import random
 
-from buttons import keyboard_1, keyboard_2
+from buttons import keyboard
 import vk_api
 from vk_api.longpoll import VkLongPoll
 
@@ -72,7 +72,7 @@ class VkBot:
 
     @staticmethod
     def write_msg(user_id, message):
-        params = {'user_id': user_id, 'random_id': random.randint(0, 2048)}
+        params = {'user_id': user_id, 'random_id': random.randint(0, 2048),'keyboard' : keyboard}
         res = vk.method('messages.send', {**params, **message})
         print(res)
 

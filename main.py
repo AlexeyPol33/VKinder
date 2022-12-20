@@ -17,6 +17,6 @@ if __name__ == '__main__':
                 bot = VkBot(event.user_id)
 
                 bot.write_msg(event.user_id, bot.new_message(event.text))
-
+                
                 print('Text: ', event.text)
                 print("-------------------")
