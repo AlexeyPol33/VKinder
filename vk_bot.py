@@ -3,7 +3,7 @@ from tokens_file import vk_group_token1, access_token
 import datetime
 import random
 
-from buttons import keyboard_1
+from buttons import keyboard_1, keyboard
 
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
@@ -40,16 +40,15 @@ class VkBot:
 
     def new_message(self, message):
 
-        # if message.upper() == 'НАЧАТЬ':
-        #     people = vk_request.get_people()['response']['items']
-        #     users = {'users': []}
-        #     for user in people:
-        #         if not user['is_closed']:
-        #             users['users'].append(user['id'])
-        #     with open('users_data.json', encoding='utf-8', mode='a') as users_file:
-        #         json.dump(users, users_file, indent=4, ensure_ascii=False)
-        #     return {"message": 'Можно начинать!'}
-
+        if message.upper() == 'НАЧАТЬ':
+            # people = vk_request.get_people()['response']['items']
+            # users = {'users': []}
+            # for user in people:
+            #     if not user['is_closed']:
+            #         users['users'].append(user['id'])
+            # with open('users_data.json', encoding='utf-8', mode='a') as users_file:
+            #     json.dump(users, users_file, indent=4, ensure_ascii=False)
+            return {"message": 'Можно начинать!', 'keyboard': keyboard}
 
         # Привет
         if message.upper() == self._COMMANDS[0]:
