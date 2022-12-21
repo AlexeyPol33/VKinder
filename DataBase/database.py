@@ -20,7 +20,7 @@ class database ():
         self.session.add(result)
         self.session.commit()
 
-    def add_candidate (self,vk_id:int,city:str,age:int,gender:chr):
+    def add_candidate (self,vk_id:int,city:int,age:int,gender:int):
         if age < 18:
             return 'Возраст не может быть меньше 18'
         if gender != 'м' or gender != 'ж':

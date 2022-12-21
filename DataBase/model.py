@@ -14,9 +14,9 @@ class Candidate(Base):
 
     id = Column(Integer, autoincrement = True, primary_key = True)
     vk_id = Column(BigInteger, unique = True,nullable=False)
-    city = Column(String)
+    city = Column(Integer)
     age = Column(SmallInteger)
-    gender = Column(CHAR(1))
+    gender = Column(Integer)
 
 class BlackLists(Base):
     __tablename__ = 'black__lists'
