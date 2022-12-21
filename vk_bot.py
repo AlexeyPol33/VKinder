@@ -1,5 +1,5 @@
 from vk_requests import VK
-from tokens_file import vk_group_token1, access_token
+from tokens_file import vk_group_token, access_token
 import datetime
 import random
 
@@ -10,7 +10,7 @@ from vk_api.bot_longpoll import VkBotLongPoll
 
 # Общие
 GROUP_ID = 211124113
-GROUP_TOKEN = vk_group_token1
+GROUP_TOKEN = vk_group_token
 API_VERSION = '5.131'
 
 # виды callback-кнопок
