@@ -35,16 +35,17 @@ class VK:
             else:
                 break
         most_popular_photos = sorted(photos['response']['items'], key=lambda x: x['likes']['count'], reverse=True)
-        owner_id = most_popular_photos[0]['owner_id']
         photos = []
-        if len(most_popular_photos) < 3:
-            for i in range(len(most_popular_photos)):
-                photo = f'photo{owner_id}_{most_popular_photos[i]["id"]}'
-                photos.append(photo)
-        else:
-            for i in range(3):
-                photo = f'photo{owner_id}_{most_popular_photos[i]["id"]}'
-                photos.append(photo)
+        if most_popular_photos:
+            owner_id = most_popular_photos[0]['owner_id']
+            if len(most_popular_photos) < 3:
+                for i in range(len(most_popular_photos)):
+                    photo = f'photo{owner_id}_{most_popular_photos[i]["id"]}'
+                    photos.append(photo)
+            else:
+                for i in range(3):
+                    photo = f'photo{owner_id}_{most_popular_photos[i]["id"]}'
+                    photos.append(photo)
         return photos
 
     def get_people(self):
