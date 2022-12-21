@@ -15,7 +15,7 @@ class Candidate(Base):
     id = Column(Integer, autoincrement = True, primary_key = True)
     vk_id = Column(BigInteger, unique = True)
 
-class BlackLists:
+class BlackLists(Base):
     __tablename__ = 'black__lists'
 
     id = Column(Integer, autoincrement = True, primary_key = True)
@@ -25,7 +25,7 @@ class BlackLists:
     users = relationship(Users, backref='black__lists')
     candidate = relationship(Candidate, backref='black__lists')
 
-class Likes:
+class Likes(Base):
     __tablename__ = 'likes'
 
     id = Column(Integer, autoincrement = True, primary_key = True)
