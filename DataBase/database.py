@@ -21,10 +21,6 @@ class database ():
         self.session.commit()
 
     def add_candidate (self,vk_id:int,city:int,age:int,gender:int):
-        if age < 18:
-            return 'Возраст не может быть меньше 18'
-        if gender != 'м' or gender != 'ж':
-            return 'Не верный пол'
         result = Candidate(vk_id = vk_id,city = city,age = age,gender = gender)
         self.session.add(result)
         self.session.commit()
