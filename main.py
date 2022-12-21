@@ -25,9 +25,10 @@ if __name__ == '__main__':
                     user_id = event.obj.message['from_id']
                     user_text = event.obj.message['text']
                     bot = VkBot(user_id)
-                    message_text = bot.new_message(user_text).get('message')
-                    message_attachment = bot.new_message(user_text).get('attachment')
-                    message_keyboard = bot.new_message(user_text).get('keyboard')
+                    new_message = bot.new_message(user_text)
+                    message_text = new_message.get('message')
+                    message_attachment = new_message.get('attachment')
+                    message_keyboard = new_message.get('keyboard')
 
                     vk.messages.send(
                         user_id=user_id,
@@ -58,14 +59,16 @@ if __name__ == '__main__':
             # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
             elif event.object.payload.get('type') == 'my_own_100500_type_edit':
-                print(f'New calling button from {event.obj.peer_id}', end='')
+                print(f'New calling button from {event.obj.peer_id}')
+                print(f'New calling message: {event.obj.conversation_message_id}', end='')
 
                 user_id = event.obj.peer_id
                 user_text = 'вправо'
                 bot = VkBot(user_id)
-                message_text = bot.new_message(user_text).get('message')
-                message_attachment = bot.new_message(user_text).get('attachment')
-                message_keyboard = bot.new_message(user_text).get('keyboard')
+                new_message = bot.new_message(user_text)
+                message_text = new_message.get('message')
+                message_attachment = new_message.get('attachment')
+                message_keyboard = new_message.get('keyboard')
 
                 last_id = vk.messages.edit(
                     peer_id=user_id,
