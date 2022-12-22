@@ -8,7 +8,9 @@ class Users (Base):
 
     id = Column(Integer, autoincrement = True, primary_key = True)
     vk_id = Column(BigInteger, unique = True,nullable=False)
-
+    city = Column(Integer)
+    age = Column(SmallInteger)
+    gender = Column(Integer)
 class Candidate(Base):
     __tablename__ = 'candidate'
 

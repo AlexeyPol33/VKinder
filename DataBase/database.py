@@ -15,8 +15,8 @@ class database ():
         Session = sessionmaker(bind=self.engin)
         self.session = Session()
 
-    def add_user (self,vk_id:int):
-        result = Users(vk_id = vk_id)
+    def add_user (self,vk_id:int,city:int,age:int,gender:int):
+        result = Users(vk_id = vk_id,city = city,age = age,gender = gender)
         self.session.add(result)
         self.session.commit()
 
