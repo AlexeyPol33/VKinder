@@ -8,6 +8,9 @@ def get_engine (dbname,password,login = 'postgres'):
     engine = sqlalchemy.create_engine(DSN)
     return(engine)
 
+def clear_db(engine):
+    drop_tables(engine)
+    create_tables(engine)
 
 class database ():
     def __init__(self,engine) -> None:
@@ -26,22 +29,42 @@ class database ():
         self.session.commit()
 
     def add_likes (self,user_id:int,candidate_id:int):
+        if (self.session.query(BlackLists).filter(BlackLists.user_id == user_id and BlackLists.candidate_id == candidate_id)).all():
+            raise 'User in black list'
+        if not self.session.query(Likes).filter(Likes.user_id == user_id and Likes.candidate_id == candidate_id):
+            return
         result = Likes(user_id = user_id,candidate_id = candidate_id)
         self.session.add(result)
         self.session.commit()
 
-    def add_black__lists (self,user_id:int,candidate_id:int):
+    def add_black_lists (self,user_id:int,candidate_id:int):
         result = BlackLists(user_id = user_id,candidate_id = candidate_id)
         self.session.add(result)
         self.session.commit()
         pass
     
+    def find_date (self,table:object,search_function:str):
+        find_result = self.session.query(table).filter(eval(search_function))
+        find_result = find_result.all()
+        return find_result
+
     def get_user_id(self,vk_id:int):
-        result = self.session.query(Users).filter(Users.vk_id == vk_id)
-        print(result.all()[0].id)
+        result = self.find_date(Users,'Users.vk_id == vk_id')
+        if result:
+            return result[0].id
+        else:
+            return None
+
+    def get_candidate_id(self,vk_id):
+        result = self.find_date(Candidate,'Candidate.vk_id == vk_id')
+        if result:
+            return result[0].id
+        else:
+            return None
+        
 
 
 if __name__ == '__main__':
-    engine = get_engine (dbname = '',password = '')
+    engine = get_engine (dbname = '',password = '',login = 'postgres')
     create_tables(engine)
-
+    
