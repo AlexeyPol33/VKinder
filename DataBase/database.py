@@ -28,7 +28,7 @@ class database ():
         self.session.add(result)
         self.session.commit()
 
-    def add_likes (self,user_id:int,candidate_id:int):
+    def add_like (self,user_id:int,candidate_id:int):
         if (self.session.query(BlackLists).filter(BlackLists.user_id == user_id and BlackLists.candidate_id == candidate_id)).all():
             raise 'User in black list'
         if not self.session.query(Likes).filter(Likes.user_id == user_id and Likes.candidate_id == candidate_id):
@@ -37,7 +37,7 @@ class database ():
         self.session.add(result)
         self.session.commit()
 
-    def add_black_lists (self,user_id:int,candidate_id:int):
+    def add_black_list (self,user_id:int,candidate_id:int):
         result = BlackLists(user_id = user_id,candidate_id = candidate_id)
         self.session.add(result)
         self.session.commit()
@@ -62,6 +62,23 @@ class database ():
         else:
             return None
         
+    def delete_user(self):
+        pass
+
+    def delete_candidate(self):
+        pass
+
+    def delete_like(self):
+        pass
+
+    def delete_black_list(self):
+        pass
+
+    def update_user(self):
+        pass
+
+    def update_candidate(self):
+        pass
 
 
 if __name__ == '__main__':
