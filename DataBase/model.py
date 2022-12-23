@@ -25,14 +25,14 @@ class Candidate(Base):
 
 
 class BlackLists(Base):
-    __tablename__ = 'black__lists'
+    __tablename__ = 'black_lists'
 
     id = Column(Integer, autoincrement = True, primary_key = True)
     user_id = Column(Integer,ForeignKey('users.id'),nullable=False)
     candidate_id = Column(Integer,ForeignKey('candidate.id'),nullable=False)
 
-    users = relationship(Users, backref='black__lists')
-    candidate = relationship(Candidate, backref='black__lists')
+    users = relationship(Users, backref='black_lists',cascade='delete')
+    candidate = relationship(Candidate, backref='black_lists',cascade='delete')
 
 class Likes(Base):
     __tablename__ = 'likes'
@@ -41,8 +41,8 @@ class Likes(Base):
     user_id = Column(Integer,ForeignKey('users.id'),nullable=False)
     candidate_id = Column(Integer,ForeignKey('candidate.id'),nullable=False)
     
-    users = relationship(Users, backref='likes')
-    candidate = relationship(Candidate, backref='likes')
+    users = relationship(Users, backref='likes',cascade='delete')
+    candidate = relationship(Candidate, backref='likes',cascade='delete')
 
 def create_tables(engine):
     Base.metadata.create_all(engine)

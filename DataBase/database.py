@@ -8,6 +8,9 @@ def get_engine (dbname,password,login = 'postgres'):
     engine = sqlalchemy.create_engine(DSN)
     return(engine)
 
+def clear_db(engine):
+    drop_tables(engine)
+    create_tables(engine)
 
 
 class Database():
@@ -34,19 +37,23 @@ class Database():
     def session_commit(self):
         self.session.commit()
 
-        
 
-    def add_likes (self,user_id:int,candidate_id:int):
+    def add_like(self,user_id:int,candidate_id:int):
         result = Likes(user_id = user_id,candidate_id = candidate_id)
         self.session.add(result)
         self.session.commit()
 
-    def add_black__lists (self,user_id:int,candidate_id:int):
+    def add_black_list (self,user_id:int,candidate_id:int):
         result = BlackLists(user_id = user_id,candidate_id = candidate_id)
         self.session.add(result)
         self.session.commit()
         pass
     
+    def find_date (self,table:object,search_function:str):
+        find_result = self.session.query(table).filter(eval(search_function))
+        find_result = find_result.all()
+        return find_result
+
     def get_user_id(self,vk_id:int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
         return result.all()[0].id
@@ -93,8 +100,3 @@ class Database():
 # if __name__ == '__main__':
 #     engine = get_engine (dbname = 'vkTinder',password = '1234')
 #     create_tables(engine)
-
-
-
-   
-   

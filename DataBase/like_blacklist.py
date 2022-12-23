@@ -20,9 +20,9 @@ def viewed_list(id):
 
 def like(user_id):
     # print(f'я { _database.get_user_id(user_id) }, Мне нравиться {_database.get_user_candidate_id(my_viewed_list[-2])}')
-    _database.add_likes(_database.get_user_id(user_id), _database.get_user_candidate_id(my_viewed_list[-2]))
+    _database.add_like(_database.get_user_id(user_id), _database.get_user_candidate_id(my_viewed_list[-2]))
 
 
 def black_list(user_id):
     # print(f'я { _database.get_user_id(user_id)}, Мне не нравиться {_database.get_user_candidate_id(my_viewed_list[-2])}')
-    _database.add_black__lists(_database.get_user_id(user_id), _database.get_user_candidate_id(my_viewed_list[-2]))
+    _database.add_black_list(_database.get_user_id(user_id), _database.get_user_candidate_id(my_viewed_list[-2]))
