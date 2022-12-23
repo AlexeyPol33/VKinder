@@ -1,15 +1,21 @@
+from DataBase.database import *
+from DataBase.model import Users, Candidate
+from DataBase.like_blacklist import viewed_list
+
 from vk_requests import VK
-from tokens_file import vk_group_token, access_token
+from tokens_file import vk_group_token, access_token, group_id, dbname, password
 import datetime
-import random
+# import random
 
 from buttons import keyboard_1, keyboard
 
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
+# from data import peoples
+
 # Общие
-GROUP_ID = 211124113
+GROUP_ID = group_id
 GROUP_TOKEN = vk_group_token
 API_VERSION = '5.131'
 
@@ -23,6 +29,8 @@ longpoll = VkBotLongPoll(vk_session, group_id=GROUP_ID)
 
 vk_request = VK(access_token=access_token)
 
+_database = Database(engine=get_engine(dbname = dbname, password = password))
+
 
 class VkBot:
 
@@ -34,11 +42,13 @@ class VkBot:
 
         self._COMMANDS = ["ПРИВЕТ", "ВРЕМЯ", "ПОКА", "СТАРТ", 'ВПРАВО']
 
+
     def _get_user_name_from_vk_id(self, user_id):
         name = vk_request.get_user_name(user_id)[0]
         return name
 
     def new_message(self, message):
+
 
         if message.upper() == 'НАЧАТЬ':
             # people = vk_request.get_people()['response']['items']
@@ -64,8 +74,30 @@ class VkBot:
 
         # Фото
         elif message.upper() in (self._COMMANDS[3], self._COMMANDS[4]):
-            people = [user['id'] for user in vk_request.get_people()['response']['items'] if not user['is_closed']]
-            find_user_id = random.choice(people)
+            
+            # people = [people[0] for people in peoples()]
+
+
+            people = [people[0] for people in _database.get_candidate(Candidate.vk_id)]
+            
+            print('получение кандидатов')
+            
+
+            # people = [user['id'] for user in vk_request.get_people(1,2,21,22)['response']['items'] if not user['is_closed']]
+            # find_user_id = random.choice(people)
+            # counter_candidate = _database.get_user_counter(self._USER_ID)
+
+
+            count = _database.get_user_count(self._USER_ID)
+            find_user_id = people[count]
+            count += 1 
+            _database.re_write(self._USER_ID, count=count)
+    
+            
+           
+            viewed_list(find_user_id)
+
+
             name = ' '.join(vk_request.get_user_name(find_user_id))
             link = f'https://vk.com/id{find_user_id}'
             photos = vk_request.get_popular_photo(find_user_id)

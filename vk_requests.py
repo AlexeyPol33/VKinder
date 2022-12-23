@@ -9,9 +9,15 @@ class VK:
         self.version = version
         self.params = {'access_token': self._token, 'v': self.version}
 
+
+    def my_id(self):
+        return requests.get('https://api.vk.com/method/users.get', params=self.params).json()['response'][0]['id'] 
+
+
     def users_info(self, user_id):
         url = 'https://api.vk.com/method/users.get'
-        params = {'user_ids': user_id}
+        params = {'user_ids': user_id, 
+                  'fields': 'sex, city, bdate'}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 
@@ -48,9 +54,9 @@ class VK:
                     photos.append(photo)
         return photos
 
-    def get_people(self):
+    def get_people(self, city, sex, age_from, age_to):
         url = 'https://api.vk.com/method/users.search'
-        params = {'city': 1, 'sex': 1, 'age_from': 20, 'age_to': 21, 'count': 1000}
+        params = {'fields': 'sex, city, bdate', 'city': city, 'sex': sex, 'age_from': age_from, 'age_to': age_to, 'count': 1000}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 

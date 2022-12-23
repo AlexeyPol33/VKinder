@@ -11,6 +11,9 @@ class Users (Base):
     city = Column(Integer)
     age = Column(SmallInteger)
     gender = Column(Integer)
+    count = Column(Integer)
+
+
 class Candidate(Base):
     __tablename__ = 'candidate'
 
@@ -19,6 +22,7 @@ class Candidate(Base):
     city = Column(Integer)
     age = Column(SmallInteger)
     gender = Column(Integer)
+
 
 class BlackLists(Base):
     __tablename__ = 'black__lists'
