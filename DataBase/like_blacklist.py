@@ -28,6 +28,6 @@ def like(user_id):
 
 def black_list(user_id):
     count = _database.get_user_count(user_id)
-    userid = _database.session.query(Candidate.vk_id).filter(Candidate.id == count)
+    userid = _database.session.query(Candidate.vk_id).filter(Candidate.id == count)[0][0]
     # print(f'я {_database.get_user_id(user_id)}, Мне не нравиться {_database.get_user_candidate_id(my_viewed_list[-2])}')
     _database.add_black_list(_database.get_user_id(user_id), _database.get_user_candidate_id(userid))

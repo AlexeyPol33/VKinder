@@ -21,7 +21,7 @@ def calculate_age(bdate):
 
 def insert(user_id):
 
-    city = vk_request.users_info(user_id=user_id)['city']['id']
+    city = vk_request.users_info(user_id=user_id)['city']['id']  # TODO Возникает ошибка ключа
     gender = vk_request.users_info(user_id=user_id)['sex']
     bdate = vk_request.users_info(user_id=user_id)['bdate']
     age = calculate_age(bdate)
@@ -47,7 +47,7 @@ def insert(user_id):
             continue
         calculate_gender = candidate['sex']
 
-        if not _database.check(Candidate, candidate_id):
+        if not _database.check('Candidate', candidate_id):
             _database.add_candidate( vk_id=candidate_id, city=candidate_city,age=candidate_age,gender=calculate_gender )
             # print('кандидат добавлен')
         else:
@@ -56,7 +56,7 @@ def insert(user_id):
 
     count = _database.session.query(Candidate.id).filter(Candidate.city == city)[0][0]
 
-    if not _database.check(Users, user_id):
+    if not _database.check('Users', user_id):
         _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=count)
         print(f'Зареган новенький с id = { _database.get_user_id(user_id) }')
     else:

@@ -49,7 +49,6 @@ if __name__ == '__main__':
                         message=message_text,
                         attachment=message_attachment)
 
-
                     print('Text: ', event.obj.message['text'])
                     print("-------------------")
 
@@ -87,7 +86,6 @@ if __name__ == '__main__':
                 message_attachment = new_message.get('attachment')
                 message_keyboard = new_message.get('keyboard')
 
-
                 last_id = vk.messages.edit(
                     peer_id=user_id,
                     message=message_text,
@@ -96,9 +94,6 @@ if __name__ == '__main__':
                     keyboard=message_keyboard)
 
                 print(f'Call button: {event.object.payload.get("type")}')
-
-
-
                 print("-------------------")
 
             elif event.object.payload.get('type') == 'black_list':
@@ -125,6 +120,4 @@ if __name__ == '__main__':
                     keyboard=message_keyboard)
 
                 print(f'Call button: {event.object.payload.get("type")}')
-
-
                 print("-------------------")

@@ -1,6 +1,8 @@
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from .model import *
+from .model import Users, Candidate, BlackLists, Likes, Base
+
+TABLE = {'Users': Users, 'Candidate': Candidate, 'BlackLists': BlackLists, 'Likes': Likes}
 
 
 def get_engine (dbname, password, login='postgres'):
@@ -54,8 +56,9 @@ class Database:
         self.session.commit()
         pass
     
-    def find_date (self,table:object,search_function:str):
-        find_result = self.session.query(table).filter(eval(search_function))
+    def find_date (self,table:str,search_function:str):
+        """table: Users, Candidate, BlackLists, Likes"""
+        find_result = self.session.query(TABLE[table]).filter(eval(search_function))
         find_result = find_result.all()
         return find_result
 
@@ -79,12 +82,12 @@ class Database:
         for i in result:
             yield i[0]
 
+    def check(self, table, vk_id:int):  # TODO сделать словарем
 
-    def check(self, table, vk_id:int):
-        result = self.session.query(table).filter(table.vk_id == vk_id)
+        """table: Users, Candidate, BlackLists, Likes"""
+        result = self.session.query(TABLE[table]).filter(TABLE[table].vk_id == vk_id)
         res = self.session.query(result.exists()).scalar()
         return res
-
 
     def re_write(self, vk_id, count):
 

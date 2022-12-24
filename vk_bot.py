@@ -58,15 +58,16 @@ class VkBot:
 
         # Пока
         elif message.upper() == self._COMMANDS[2]:
-            clear_db(engine=get_engine(dbname=dbname, password=password))
+            # clear_db(engine=get_engine(dbname=dbname, password=password))
 
             return {"message": f"Пока, {self._USERNAME}("}
 
         # Фото
         elif message.upper() in (self._COMMANDS[3], self._COMMANDS[4], self._COMMANDS[5]):
+
             print('получение кандидатов')
 
-            if not _database.check(Users, self._USER_ID):
+            if not _database.check('Users', self._USER_ID):
                 insert(self._USER_ID)
             count = _database.get_user_count(self._USER_ID) - 1
             city = self._CITY
@@ -83,8 +84,13 @@ class VkBot:
             return {"message": f'{first_name} {last_name}\n{link}', 'attachment': photos,
                     'keyboard': keyboard_1.get_keyboard()}
 
+        elif message.upper() == 'ОЧИСТИТЬ':
+            clear_db(get_engine(dbname=dbname, password=password))
+
+            return {"message": "Таблица очищена"}
+
         else:
-            if not _database.check(Users, self._USER_ID):
+            if not _database.check('Users', self._USER_ID):
 
                 return {"message": 'Для начала нажмите кнопку "Начать.\nИли отправьте сообщение со словом "Начать"',
                         'keyboard': keyboard}
