@@ -35,18 +35,19 @@ def fill_the_database_with_test_data(database):
         db.add_candidate(**dc)
 
     for dl in data_likes:
-        db.add_likes(**dl)
+        db.add_like(**dl)
 
     for dbl in data_black_lists:
-        db.add_black_lists(**dbl)
+        db.add_black_list(**dbl)
 
 
 if __name__ == '__main__':
-    engine = get_engine(dbname = '',password = '')
+    engine = get_engine(dbname = 'test3',password = 'as3377926')
+    clear_db(engine)
     #clear_db(engine)
-    db = database(engine)
+    #db = database(engine)
     #fill_the_database_with_test_data(db)
 
-    print(db.find_date(Users,'Users.vk_id == 111111111')[0])
+    #print(db.find_date(Users,'Users.vk_id == 111111111')[0])
 
     

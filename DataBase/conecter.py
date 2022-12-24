@@ -23,7 +23,7 @@ def createTable():
 def insert(user_id):
     
     
-    city = vk_request.users_info(user_id=user_id)['response'][0]['city']['id'] 
+    city = vk_request.users_info(user_id=user_id)['response'][0]['city']['id'] #TODO Возникает ошибка ключа
     gender = vk_request.users_info(user_id=user_id)['response'][0]['sex']
     bdate = vk_request.users_info(user_id=user_id)['response'][0]['bdate']
     age = calculate_age(bdate)
