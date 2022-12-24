@@ -2,41 +2,46 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from .model import *
 
-def get_engine (dbname,password,login = 'postgres'):
+
+def get_engine (dbname, password, login='postgres'):
 
     DSN = f"postgresql://{login}:{password}@localhost:5432/{dbname}"
     engine = sqlalchemy.create_engine(DSN)
-    return(engine)
+    return (engine)
+
+
+def create_tables(engine):
+    Base.metadata.create_all(engine)
+
+
+def drop_tables(engine):
+    Base.metadata.drop_all(engine)
+
 
 def clear_db(engine):
     drop_tables(engine)
     create_tables(engine)
 
 
-class Database():
+class Database:
+
     def __init__(self, engine) -> None:
         self.engin = engine
         Session = sessionmaker(bind=self.engin)
         self.session = Session()
 
-    def add_user(self,vk_id:int,city:int,age:int,gender:int, count:int):
-        result = Users(vk_id = vk_id,city = city,age = age,gender = gender, count=count)
+    def add_user(self, vk_id: int, city: int, age: int, gender: int, count: int):
+        result = Users(vk_id=vk_id, city=city, age=age, gender=gender, count=count)
         self.session.add(result)
         self.session.commit()
-
-
-
-
 
     def add_candidate (self,vk_id:int,city:int,age:int,gender:int):
         result = Candidate(vk_id = vk_id,city = city,age = age,gender = gender)
         self.session.add(result)
         # self.session.commit()
-    
-    
+
     def session_commit(self):
         self.session.commit()
-
 
     def add_like(self,user_id:int,candidate_id:int):
         result = Likes(user_id = user_id,candidate_id = candidate_id)
@@ -54,28 +59,25 @@ class Database():
         find_result = find_result.all()
         return find_result
 
-    def get_user_id(self,vk_id:int):
+    def get_user_id(self, vk_id: int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
         return result.all()[0].id
-
 
     def get_user_candidate_id(self,vk_id:int):
         result = self.session.query(Candidate).filter(Candidate.vk_id == vk_id)
         return result.all()[0].id
 
+    def get_user_count(self, vk_id: int):
 
-    def get_user_count(self,vk_id:int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
-        return result.all()[0].count
 
+        return result.all()[0].count if result.all() else None
 
+    def get_candidate(self, city):
 
-    def get_candidate(self, *args):
-
-        result = self.session.query(*args)
-
+        result = self.session.query(Candidate.vk_id).filter(Candidate.city == city)
         for i in result:
-            yield i
+            yield i[0]
 
 
     def check(self, table, vk_id:int):
@@ -93,10 +95,3 @@ class Database():
         i.count = count
         self.session.add(i)
         self.session.commit()
-
-
-
-
-# if __name__ == '__main__':
-#     engine = get_engine (dbname = 'vkTinder',password = '1234')
-#     create_tables(engine)

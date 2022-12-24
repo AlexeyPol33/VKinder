@@ -1,49 +1,38 @@
 from .database import Database, get_engine
-from .model import Users, Candidate, create_tables
+from .model import Users, Candidate
 
+from vk_requests import VK
 from vk_bot import *
 from datetime import date
 import re
 
-from tokens_file import dbname, password
+from tokens_file import dbname, password, access_token
 
 _database = Database(engine=get_engine(dbname = dbname,password = password))
+vk_request = VK(access_token=access_token)
+
 
 def calculate_age(bdate):
+
     today = date.today()
     result = re.match(r"(\d{1,2})\.(\d{1,2})\.(\d{4})", bdate)
     return today.year - int(result.group(3)) - ((today.month, today.day) < (int(result.group(2)), int(result.group(1))))
 
-def createTable():
-    engine = get_engine (dbname = dbname, password = password)
-    create_tables(engine)
-
-
 
 def insert(user_id):
-    
-    
-    city = vk_request.users_info(user_id=user_id)['response'][0]['city']['id'] 
-    gender = vk_request.users_info(user_id=user_id)['response'][0]['sex']
-    bdate = vk_request.users_info(user_id=user_id)['response'][0]['bdate']
+
+    city = vk_request.users_info(user_id=user_id)['city']['id']
+    gender = vk_request.users_info(user_id=user_id)['sex']
+    bdate = vk_request.users_info(user_id=user_id)['bdate']
     age = calculate_age(bdate)
+    candidate_gender = 1 if gender == 2 else 2
 
-    candidate_gender = 1 if gender==2 else 2
-
-
-    if not _database.check( Users, user_id):
-        _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=0)
-        print(f'Зареган новенький с id = { _database.get_user_id(user_id) }')
-    else:
-        print(f"Уже был и посмотрел до {_database.get_user_count(user_id)}")
-   
-
-
-
-    for candidate in vk_request.get_people(city=city, sex=candidate_gender, age_from=int(age)-1,age_to=int(age)+1)['response']['items']:
+    people = vk_request.get_people(city=city, sex=candidate_gender, age_from=int(age)-1,
+                                   age_to=int(age)+1)['response']['items']
+    for candidate in people:
         if candidate['is_closed']:
             continue
-        candidate_id =  candidate['id']
+        candidate_id = candidate['id']
         if 'city' in candidate:
             if candidate['city']['id'] == city:
                 candidate_city = candidate['city']['id']
@@ -52,7 +41,7 @@ def insert(user_id):
         else:
             continue
         candidate_bdate = candidate['bdate']
-        if len(candidate_bdate) in [8,9,10]:
+        if len(candidate_bdate) in [8, 9, 10]:
             candidate_age = calculate_age(candidate_bdate)
         else:
             continue
@@ -64,6 +53,13 @@ def insert(user_id):
         else:
             pass
             # print('кандидат уже есть')
+
+    count = _database.session.query(Candidate.id).filter(Candidate.city == city)[0][0]
+
+    if not _database.check(Users, user_id):
+        _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=count)
+        print(f'Зареган новенький с id = { _database.get_user_id(user_id) }')
+    else:
+        print(f"Уже был и посмотрел до {_database.get_user_count(user_id)}")
+
     _database.session_commit()
-
-

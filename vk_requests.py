@@ -9,22 +9,16 @@ class VK:
         self.version = version
         self.params = {'access_token': self._token, 'v': self.version}
 
-
     def my_id(self):
-        return requests.get('https://api.vk.com/method/users.get', params=self.params).json()['response'][0]['id'] 
 
+        return requests.get('https://api.vk.com/method/users.get', params=self.params).json()['response'][0]['id'] 
 
     def users_info(self, user_id):
         url = 'https://api.vk.com/method/users.get'
         params = {'user_ids': user_id, 
                   'fields': 'sex, city, bdate'}
         response = requests.get(url, params={**self.params, **params})
-        return response.json()
-
-    def get_user_name(self, user_id):
-        name = self.users_info(user_id)['response'][0]['first_name']
-        surname = self.users_info(user_id)['response'][0]['last_name']
-        return name, surname
+        return response.json()['response'][0]
 
     def get_photo(self, user_id, album_id='profile', count=1):
         id = user_id
@@ -56,7 +50,8 @@ class VK:
 
     def get_people(self, city, sex, age_from, age_to):
         url = 'https://api.vk.com/method/users.search'
-        params = {'fields': 'sex, city, bdate', 'city': city, 'sex': sex, 'age_from': age_from, 'age_to': age_to, 'count': 1000}
+        params = {'fields': 'sex, city, bdate', 'city': city, 'sex': sex,
+                  'age_from': age_from, 'age_to': age_to, 'count': 1000}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 

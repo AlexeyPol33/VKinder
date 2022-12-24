@@ -1,17 +1,11 @@
-
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotEventType
 import json
-
-
-
 
 # --
 from vk_bot import vk, VkBot, longpoll, CALLBACK_TYPES, vk_request
 # --
 
-
-from DataBase.conecter import insert, createTable
 from DataBase.like_blacklist import *
 from DataBase.database import *
 from tokens_file import dbname, password
@@ -19,14 +13,11 @@ from tokens_file import dbname, password
 
 if __name__ == '__main__':
 
-    _database = Database(engine=get_engine(dbname = dbname, password = password))
-
-    my_id = vk_request.my_id()
-    createTable()
-    insert(my_id)
+    engine = get_engine(dbname=dbname, password=password)
+    _database = Database(engine=engine)
+    create_tables(engine=engine)
 
     # print( "Идеальное место для получение кандидатов" )
-
  
     print("Server started")
     for event in longpoll.listen():
@@ -58,13 +49,13 @@ if __name__ == '__main__':
                         message=message_text,
                         attachment=message_attachment)
 
-            
+
                     print('Text: ', event.obj.message['text'])
                     print("-------------------")
 
-                    
         # обрабатываем клики по callback кнопкам
         elif event.type == VkBotEventType.MESSAGE_EVENT:
+
             # если это одно из 3х встроенных действий:
             if event.object.payload.get('type') in CALLBACK_TYPES:
                 # отправляем серверу указания как какую из кнопок обработать. Это заложено в
@@ -82,15 +73,20 @@ if __name__ == '__main__':
             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
             elif event.object.payload.get('type') == 'like':
                 print(f'New calling button from {event.obj.peer_id}')
-                print(f'New calling message: {event.obj.conversation_message_id}', end='')
+                print(f'New calling message: {event.obj.conversation_message_id}')
 
                 user_id = event.obj.peer_id
-                user_text = 'вправо'
+                like(user_id)
+                count = _database.get_user_count(user_id)
+                count += 1
+                _database.re_write(user_id, count=count)
+                user_text = event.object.payload.get('type')
                 bot = VkBot(user_id)
                 new_message = bot.new_message(user_text)
                 message_text = new_message.get('message')
                 message_attachment = new_message.get('attachment')
                 message_keyboard = new_message.get('keyboard')
+
 
                 last_id = vk.messages.edit(
                     peer_id=user_id,
@@ -101,16 +97,20 @@ if __name__ == '__main__':
 
                 print(f'Call button: {event.object.payload.get("type")}')
 
-                like( user_id)
+
 
                 print("-------------------")
 
             elif event.object.payload.get('type') == 'black_list':
                 print(f'New calling button from {event.obj.peer_id}')
-                print(f'New calling message: {event.obj.conversation_message_id}', end='')
+                print(f'New calling message: {event.obj.conversation_message_id}')
 
                 user_id = event.obj.peer_id
-                user_text = 'вправо'
+                black_list(user_id)
+                count = _database.get_user_count(user_id)
+                count += 1
+                _database.re_write(user_id, count=count)
+                user_text = event.object.payload.get('type')
                 bot = VkBot(user_id)
                 new_message = bot.new_message(user_text)
                 message_text = new_message.get('message')
@@ -126,6 +126,5 @@ if __name__ == '__main__':
 
                 print(f'Call button: {event.object.payload.get("type")}')
 
-                black_list( user_id )
 
                 print("-------------------")

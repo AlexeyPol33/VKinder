@@ -22,7 +22,7 @@ def get_but(text, color):
 keyboard = {
     "one_time" : False,
     "buttons" : [
-        [get_but('Старт', 'positive'), get_but('Время', 'positive')],
+        [get_but('Начать', 'positive'), get_but('Время', 'positive')],
         [get_but('Привет', 'positive'), get_but('Пока', 'positive')]
     ]
 }
