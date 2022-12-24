@@ -1,6 +1,8 @@
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from .model import *
+from .model import Users,Candidate, BlackLists,Likes,drop_tables,create_tables
+
+TABLE = {'Users':Users,'Candidate':Candidate,'BlackLists':BlackLists,'Likes':Likes}
 
 def get_engine (dbname,password,login = 'postgres'):
 
@@ -12,7 +14,6 @@ def clear_db(engine):
     drop_tables(engine)
     create_tables(engine)
 
-
 class Database():
     def __init__(self, engine) -> None:
         self.engin = engine
@@ -23,10 +24,6 @@ class Database():
         result = Users(vk_id = vk_id,city = city,age = age,gender = gender, count=count)
         self.session.add(result)
         self.session.commit()
-
-
-
-
 
     def add_candidate (self,vk_id:int,city:int,age:int,gender:int):
         result = Candidate(vk_id = vk_id,city = city,age = age,gender = gender)
@@ -49,8 +46,9 @@ class Database():
         self.session.commit()
         pass
     
-    def find_date (self,table:object,search_function:str):
-        find_result = self.session.query(table).filter(eval(search_function))
+    def find_date (self,table:str,search_function:str):
+        """table: Users, Candidate, BlackLists, Likes"""
+        find_result = self.session.query(TABLE[table]).filter(eval(search_function))
         find_result = find_result.all()
         return find_result
 
@@ -78,8 +76,9 @@ class Database():
             yield i
 
 
-    def check(self, table, vk_id:int):
-        result = self.session.query(table).filter(table.vk_id == vk_id)
+    def check(self, table, vk_id:int): #TODO сделать словарем
+        """table: Users, Candidate, BlackLists, Likes"""
+        result = self.session.query(TABLE[table]).filter(TABLE[table].vk_id == vk_id)
         res = self.session.query(result.exists()).scalar()
         return res
 

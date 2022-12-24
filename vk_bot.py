@@ -78,7 +78,7 @@ class VkBot:
             # people = [people[0] for people in peoples()]
 
 
-            people = [people[0] for people in _database.get_candidate(Candidate.vk_id)]
+            people = [people[0] for people in _database.get_candidate(TABLE['Candidate'].vk_id)]
             
             print('получение кандидатов')
             
