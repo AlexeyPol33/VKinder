@@ -40,7 +40,10 @@ class VkBot:
         self._CITY = vk_request.users_info(user_id).get('city')
         self.page_size = 5
         if self._CITY is None:
-            self._CITY = _database.get_user_city(self._USER_ID)
+            if _database.check('Users', self._USER_ID):
+                self._CITY = _database.get_user_city(self._USER_ID)
+        else:
+            self._CITY = self._CITY.get('id')
 
         self._COMMANDS = ["ПРИВЕТ", "ВРЕМЯ", "ПОКА", "НАЧАТЬ", 'BLACK_LIST', 'LIKE']
 
@@ -91,7 +94,7 @@ class VkBot:
                             'keyboard': keyboard}
                 self.insert_data()
             count = _database.get_user_count(self._USER_ID) - 1
-            city = self._CITY['id']
+            city = self._CITY
             people = [people for people in _database.get_candidate(city)]
             find_user_id = people[count]
             viewed_list(find_user_id)

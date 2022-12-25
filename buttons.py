@@ -24,7 +24,7 @@ def city_keyboard(cities: list, home_town: str, page_size: int):
                 city = cities[i]['title']
                 region = cities[i].get('region', 'РФ')
                 keyboard_2.add_callback_button(label=f"{city}, {region}", color=VkKeyboardColor.SECONDARY,
-                                               payload={"type": f"{cities[i]['title']}"})
+                                               payload={"type": f"{cities[i]['title']}", "home": home_town})
                 keyboard_2.add_line()
             elif i < 0:
                 break

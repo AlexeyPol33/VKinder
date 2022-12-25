@@ -135,7 +135,8 @@ if __name__ == '__main__':
 
             else:
                 city = event.object.payload.get('type')
-                CITIES = {city['title']: city['id'] for city in bot.get_cities()}
+                home_town = event.object.payload.get('home')
+                CITIES = {city['title']: city['id'] for city in bot.get_cities(home_town=home_town)}
                 city = CITIES[city]
                 bot.insert_data(city_id=city)
                 _database.re_write(vk_id=user_id, city=city)

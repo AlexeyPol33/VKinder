@@ -18,7 +18,8 @@ class VK:
         params = {'user_ids': user_id, 
                   'fields': 'sex, city, bdate'}
         response = requests.get(url, params={**self.params, **params})
-        return response.json()['response'][0]
+        res = response.json()
+        return res['response'][0]
 
     def get_photo(self, user_id, album_id='profile', count=1):
         id = user_id
