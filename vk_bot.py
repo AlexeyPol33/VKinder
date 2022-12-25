@@ -38,14 +38,11 @@ class VkBot:
         self._USER_ID = user_id
         self._USERNAME = vk_request.users_info(user_id)['first_name']
         self._CITY = vk_request.users_info(user_id).get('city')
-        self._CITY_NAME = None
+        self.page_size = 5
         if self._CITY is None:
             self._CITY = _database.get_user_city(self._USER_ID)
 
         self._COMMANDS = ["ПРИВЕТ", "ВРЕМЯ", "ПОКА", "НАЧАТЬ", 'BLACK_LIST', 'LIKE']
-
-        # pprint(vk_request.get_cities_id('Набережные'))
-        # print(len(vk_request.get_cities_id('Набережные')))
 
     def insert_data(self, city_id=None):
         if city_id is None:
@@ -58,11 +55,11 @@ class VkBot:
 
         if 'город' in message.lower():
             home_town = message.lower().replace('город', '').strip()
-            self._CITY_NAME = home_town
-            cities = vk_request.get_cities_id(home_town)['response']['items']
+            cities = self.get_cities(home_town=home_town)
             # insert(user_id=self._USER_ID, home_town=home_town)
             if cities:
-                message_keyboard = city_keyboard(cities).get_keyboard()
+                page_size = self.page_size
+                message_keyboard = city_keyboard(cities=cities, home_town=home_town, page_size=page_size).get_keyboard()
                 return {'message': f'Выберите нужный город:', 'keyboard': message_keyboard}
             else:
                 return {'message': 'Город не найден, повсторите попытку'}
@@ -130,12 +127,11 @@ class VkBot:
 
         return now
 
-    def get_cities(self) -> dict:
+    @staticmethod
+    def get_cities(home_town) -> list:
 
-        city_name = self._CITY_NAME
+        city_name = home_town
         cities = vk_request.get_cities_id(city_name)['response']['items']
-        cities = {city['title']: city['id'] for city in cities}
+        # cities = {city['title']: city['id'] for city in cities}
 
         return cities
-
-

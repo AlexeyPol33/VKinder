@@ -1,6 +1,7 @@
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotEventType
 import json
+from buttons import city_keyboard
 
 # --
 from vk_bot import vk, VkBot, longpoll, CALLBACK_TYPES
@@ -13,6 +14,7 @@ from tokens_file import dbname, password
 
 if __name__ == '__main__':
 
+    pages = ['<<', '>>']
     engine = get_engine(dbname=dbname, password=password)
     _database = Database(engine=engine)
     create_tables(engine=engine)
@@ -58,17 +60,28 @@ if __name__ == '__main__':
             bot = VkBot(user_id)
 
             # если это одно из 3х встроенных действий:
-            if event.object.payload.get('type') in CALLBACK_TYPES:
+            if isinstance(event.object.payload.get('type'), int):
                 # отправляем серверу указания как какую из кнопок обработать. Это заложено в
                 # payload каждой callback-кнопки при ее создании.
                 # Но можно сделать иначе: в payload положить свои собственные
                 # идентификаторы кнопок, а здесь по ним определить
                 # какой запрос надо послать. Реализован первый вариант.
-                r = vk.messages.sendMessageEventAnswer(
-                    event_id=event.object.event_id,
-                    user_id=event.object.user_id,
-                    peer_id=event.object.peer_id,
-                    event_data=json.dumps(event.object.payload))
+
+                home_town = event.object.payload.get('home')
+                cities = bot.get_cities(home_town=home_town)
+                message_keyboard = city_keyboard(cities=cities, home_town=home_town, page_size=bot.page_size * event.object.payload.get('type')).get_keyboard()
+
+                last_id = vk.messages.edit(
+                    peer_id=user_id,
+                    message='Выберите город:',
+                    conversation_message_id=event.obj.conversation_message_id,
+                    keyboard=message_keyboard)
+
+                # r = vk.messages.sendMessageEventAnswer(
+                #     event_id=event.object.event_id,
+                #     user_id=event.object.user_id,
+                #     peer_id=event.object.peer_id,
+                #     event_data=json.dumps(event.object.payload))
             # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
             # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
@@ -122,7 +135,7 @@ if __name__ == '__main__':
 
             else:
                 city = event.object.payload.get('type')
-                CITIES = bot.get_cities()
+                CITIES = {city['title']: city['id'] for city in bot.get_cities()}
                 city = CITIES[city]
                 bot.insert_data(city_id=city)
                 _database.re_write(vk_id=user_id, city=city)

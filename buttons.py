@@ -10,17 +10,30 @@ keyboard_1.add_callback_button(label='❌', color=VkKeyboardColor.SECONDARY, pay
 keyboard_1.add_callback_button(label='❤', color=VkKeyboardColor.SECONDARY, payload={"type": "like"})
 
 
-def city_keyboard(cities: list):
+def city_keyboard(cities: list, home_town: str, page_size: int):
+
+    start = page_size - 5
+    end = page_size
 
     keyboard_2 = VkKeyboard(**settings)
-    for i in range(len(cities)):
-        if i == len(cities) - 1:
-            keyboard_2.add_callback_button(label=cities[i]['title'], color=VkKeyboardColor.SECONDARY,
-                                           payload={"type": f"{cities[i]['title']}"})
-        else:
-            keyboard_2.add_callback_button(label=cities[i]['title'], color=VkKeyboardColor.SECONDARY,
-                                           payload={"type": f"{cities[i]['title']}"})
-            keyboard_2.add_line()
+    if start < 0 or end < 0:
+        pass
+    else:
+        for i in range(start, end):
+            if i <= len(cities) - 1:
+                city = cities[i]['title']
+                region = cities[i].get('region', 'РФ')
+                keyboard_2.add_callback_button(label=f"{city}, {region}", color=VkKeyboardColor.SECONDARY,
+                                               payload={"type": f"{cities[i]['title']}"})
+                keyboard_2.add_line()
+            elif i < 0:
+                break
+            else:
+                break
+    keyboard_2.add_callback_button(label="<<", color=VkKeyboardColor.SECONDARY,
+                                   payload={"type": (page_size - 5) // 5, "home": home_town})
+    keyboard_2.add_callback_button(label=">>", color=VkKeyboardColor.SECONDARY,
+                                   payload={"type": (page_size + 5) // 5, "home": home_town})
 
     return keyboard_2
 
