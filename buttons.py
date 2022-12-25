@@ -10,6 +10,21 @@ keyboard_1.add_callback_button(label='❌', color=VkKeyboardColor.SECONDARY, pay
 keyboard_1.add_callback_button(label='❤', color=VkKeyboardColor.SECONDARY, payload={"type": "like"})
 
 
+def city_keyboard(cities: list):
+
+    keyboard_2 = VkKeyboard(**settings)
+    for i in range(len(cities)):
+        if i == len(cities) - 1:
+            keyboard_2.add_callback_button(label=cities[i]['title'], color=VkKeyboardColor.SECONDARY,
+                                           payload={"type": f"{cities[i]['title']}"})
+        else:
+            keyboard_2.add_callback_button(label=cities[i]['title'], color=VkKeyboardColor.SECONDARY,
+                                           payload={"type": f"{cities[i]['title']}"})
+            keyboard_2.add_line()
+
+    return keyboard_2
+
+
 def get_but(text, color):
     return {
                 "action": {

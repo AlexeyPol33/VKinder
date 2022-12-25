@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotEventType
 import json
 
 # --
-from vk_bot import vk, VkBot, longpoll, CALLBACK_TYPES, vk_request
+from vk_bot import vk, VkBot, longpoll, CALLBACK_TYPES
 # --
 
 from DataBase.like_blacklist import *
@@ -54,6 +54,8 @@ if __name__ == '__main__':
 
         # обрабатываем клики по callback кнопкам
         elif event.type == VkBotEventType.MESSAGE_EVENT:
+            user_id = event.obj.peer_id
+            bot = VkBot(user_id)
 
             # если это одно из 3х встроенных действий:
             if event.object.payload.get('type') in CALLBACK_TYPES:
@@ -74,13 +76,11 @@ if __name__ == '__main__':
                 print(f'New calling button from {event.obj.peer_id}')
                 print(f'New calling message: {event.obj.conversation_message_id}')
 
-                user_id = event.obj.peer_id
                 like(user_id)
                 count = _database.get_user_count(user_id)
                 count += 1
                 _database.re_write(user_id, count=count)
                 user_text = event.object.payload.get('type')
-                bot = VkBot(user_id)
                 new_message = bot.new_message(user_text)
                 message_text = new_message.get('message')
                 message_attachment = new_message.get('attachment')
@@ -100,13 +100,11 @@ if __name__ == '__main__':
                 print(f'New calling button from {event.obj.peer_id}')
                 print(f'New calling message: {event.obj.conversation_message_id}')
 
-                user_id = event.obj.peer_id
                 black_list(user_id)
                 count = _database.get_user_count(user_id)
                 count += 1
                 _database.re_write(user_id, count=count)
                 user_text = event.object.payload.get('type')
-                bot = VkBot(user_id)
                 new_message = bot.new_message(user_text)
                 message_text = new_message.get('message')
                 message_attachment = new_message.get('attachment')
@@ -121,3 +119,23 @@ if __name__ == '__main__':
 
                 print(f'Call button: {event.object.payload.get("type")}')
                 print("-------------------")
+
+            else:
+                city = event.object.payload.get('type')
+                CITIES = bot.get_cities()
+                city = CITIES[city]
+                bot.insert_data(city_id=city)
+                _database.re_write(vk_id=user_id, city=city)
+
+                new_message = bot.new_message("Начать")
+                message_text = new_message.get('message')
+                message_attachment = new_message.get('attachment')
+                message_keyboard = new_message.get('keyboard')
+
+                last_id = vk.messages.edit(
+                    peer_id=user_id,
+                    message=message_text,
+                    attachment=message_attachment,
+                    conversation_message_id=event.obj.conversation_message_id,
+                    keyboard=message_keyboard)
+

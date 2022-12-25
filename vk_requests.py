@@ -59,3 +59,9 @@ class VK:
         url = 'https://api.vk.com/method/messages.send'
         params = {'user_id': user_id, 'message': message, 'random_id': random.randint(0, 2048)}
         response = requests.put(url, params={**self.params, **params})
+
+    def get_cities_id(self, city_name):
+        url = 'https://api.vk.com/method/database.getCities'
+        params = {'country_id': 1, 'q': city_name}
+        response = requests.get(url=url, params={**self.params, **params})
+        return response.json()
