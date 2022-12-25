@@ -1,6 +1,3 @@
-from .database import Database, get_engine
-from .model import Users, Candidate
-
 from vk_requests import VK
 from vk_bot import *
 from datetime import date
@@ -8,7 +5,7 @@ import re
 
 from tokens_file import dbname, password, access_token
 
-_database = Database(engine=get_engine(dbname = dbname,password = password))
+_database = Database(engine=get_engine(dbname=dbname, password=password))
 vk_request = VK(access_token=access_token)
 
 
@@ -19,16 +16,17 @@ def calculate_age(bdate):
     return today.year - int(result.group(3)) - ((today.month, today.day) < (int(result.group(2)), int(result.group(1))))
 
 
-def insert(user_id):
+def insert(user_id, city=None):
 
-    city = vk_request.users_info(user_id=user_id)['city']['id']  # TODO Возникает ошибка ключа
-    gender = vk_request.users_info(user_id=user_id)['sex']
-    bdate = vk_request.users_info(user_id=user_id)['bdate']
+    user_info = vk_request.users_info(user_id)
+    city = user_info.get('city') if city is None else city  # TODO Возникает ошибка ключа
+    gender = user_info['sex']
+    bdate = user_info['bdate']
     age = calculate_age(bdate)
     candidate_gender = 1 if gender == 2 else 2
 
-    people = vk_request.get_people(city=city, sex=candidate_gender, age_from=int(age)-1,
-                                   age_to=int(age)+1)['response']['items']
+    people = vk_request.get_people(city=city, sex=candidate_gender,
+                                   age_from=int(age)-1, age_to=int(age)+1)['response']['items']
     for candidate in people:
         if candidate['is_closed']:
             continue
@@ -48,7 +46,8 @@ def insert(user_id):
         calculate_gender = candidate['sex']
 
         if not _database.check('Candidate', candidate_id):
-            _database.add_candidate( vk_id=candidate_id, city=candidate_city,age=candidate_age,gender=calculate_gender )
+            _database.add_candidate(vk_id=candidate_id, city=candidate_city,
+                                    age=candidate_age, gender=calculate_gender)
             # print('кандидат добавлен')
         else:
             pass

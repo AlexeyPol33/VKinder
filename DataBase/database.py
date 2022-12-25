@@ -66,7 +66,11 @@ class Database:
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
         return result.all()[0].id
 
-    def get_user_candidate_id(self,vk_id:int):
+    def get_user_city(self, vk_id: int):
+        result = self.session.query(Users).filter(Users.vk_id == vk_id)
+        return result.all()[0].city
+
+    def get_user_candidate_id(self, vk_id: int):
         result = self.session.query(Candidate).filter(Candidate.vk_id == vk_id)
         return result.all()[0].id
 
@@ -89,12 +93,15 @@ class Database:
         res = self.session.query(result.exists()).scalar()
         return res
 
-    def re_write(self, vk_id, count):
+    def re_write(self, vk_id, count=None, city=None):
 
         id = self.get_user_id(vk_id=vk_id)
 
         i = self.session.query(Users).get(id)
 
-        i.count = count
+        if city is not None:
+            i.city = city
+        if count is not None:
+            i.count = count
         self.session.add(i)
         self.session.commit()
