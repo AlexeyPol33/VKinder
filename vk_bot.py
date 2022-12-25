@@ -91,7 +91,7 @@ class VkBot:
                             'keyboard': keyboard}
                 self.insert_data()
             count = _database.get_user_count(self._USER_ID) - 1
-            city = self._CITY
+            city = self._CITY['id']
             people = [people for people in _database.get_candidate(city)]
             find_user_id = people[count]
             viewed_list(find_user_id)

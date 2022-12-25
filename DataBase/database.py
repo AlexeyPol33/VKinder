@@ -82,11 +82,11 @@ class Database:
 
     def get_candidate(self, city):
 
-        result = self.session.query(Candidate.vk_id).filter(Candidate.city == city)
+        result = self.session.query(Candidate.vk_id).filter(Candidate.city == city).all()
         for i in result:
             yield i[0]
 
-    def check(self, table, vk_id:int):  # TODO сделать словарем
+    def check(self, table, vk_id:int):  
 
         """table: Users, Candidate, BlackLists, Likes"""
         result = self.session.query(TABLE[table]).filter(TABLE[table].vk_id == vk_id)
