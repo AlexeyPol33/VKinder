@@ -1,7 +1,6 @@
 from DataBase.database import *
 from DataBase.like_blacklist import viewed_list
 from DataBase.conecter import insert
-from pprint import pprint
 
 from vk_requests import VK
 from tokens_file import vk_group_token, access_token, group_id, dbname, password
@@ -80,16 +79,11 @@ class VkBot:
 
         # Пока
         elif message.upper() == self._COMMANDS[2]:
-            # clear_db(engine=get_engine(dbname=dbname, password=password))
 
             return {"message": f"Пока, {self._USERNAME}("}
 
         # Фото
         elif message.upper() in (self._COMMANDS[3], self._COMMANDS[4], self._COMMANDS[5]):
-
-            if message.upper() == "НАЧАТЬ":
-
-                pass
 
             print('получение кандидатов')
 
@@ -103,8 +97,9 @@ class VkBot:
             people = [people for people in _database.get_candidate(city)]
             find_user_id = people[count]
             viewed_list(find_user_id)
-            first_name = vk_request.users_info(find_user_id)['first_name']
-            last_name = vk_request.users_info(find_user_id)['last_name']
+            user_info = vk_request.users_info(find_user_id)
+            first_name = user_info['first_name']
+            last_name = user_info['last_name']
             link = f'https://vk.com/id{find_user_id}'
             photos = vk_request.get_popular_photo(find_user_id)
             photos = ','.join(photos)

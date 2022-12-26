@@ -47,6 +47,8 @@ def get_but(text, color):
                 },
                 "color": f"{color}"
             }
+
+
 keyboard = {
     "one_time" : False,
     "buttons" : [

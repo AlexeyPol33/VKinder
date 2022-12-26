@@ -21,10 +21,9 @@ class VK:
         res = response.json()
         return res['response'][0]
 
-    def get_photo(self, user_id, album_id='profile', count=1):
-        id = user_id
+    def get_photo(self, user_id, album_id='profile'):
         url = 'https://api.vk.com/method/photos.get'
-        params = {'owner_id': id, 'album_id': album_id, 'photo_sizes': 1, 'extended': 1}
+        params = {'owner_id': user_id, 'album_id': album_id, 'photo_sizes': 1, 'extended': 1}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 
@@ -59,7 +58,7 @@ class VK:
     def send_message(self, user_id, message):
         url = 'https://api.vk.com/method/messages.send'
         params = {'user_id': user_id, 'message': message, 'random_id': random.randint(0, 2048)}
-        response = requests.put(url, params={**self.params, **params})
+        requests.put(url, params={**self.params, **params})
 
     def get_cities_id(self, city_name):
         url = 'https://api.vk.com/method/database.getCities'

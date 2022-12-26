@@ -38,7 +38,11 @@ def insert(user_id, random_id, city=None):
                 continue
         else:
             continue
-        candidate_bdate = candidate['bdate']
+        if 'bdate' in candidate:
+            candidate_bdate = candidate['bdate']
+        else:
+            continue
+        # candidate_bdate = candidate['bdate']
         if len(candidate_bdate) in [8, 9, 10]:
             candidate_age = calculate_age(candidate_bdate)
         else:
@@ -53,7 +57,7 @@ def insert(user_id, random_id, city=None):
             pass
             # print('кандидат уже есть')
 
-    count = _database.session.query(Candidate.id).filter(Candidate.city == city)[0][0]
+    count = 1 # _database.session.query(Candidate.id).filter(Candidate.city == city)[0][0]
 
     if not _database.check('Users', user_id):
         _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=count, random_id=random_id)
