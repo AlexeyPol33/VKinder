@@ -108,6 +108,24 @@ class VkBot:
             return {"message": f'{first_name} {last_name}\n{link}', 'attachment': photos,
                     'keyboard': message_keyboard}
 
+        #Избранное
+        elif message.upper() == 'ИЗБРАННОЕ':
+            _candidats_ids = _database.find_date('Likes',f'Likes.user_id == {_database.get_user_id(self._USER_ID)}')
+            _candidats_ids = [i.candidate_id for i in _candidats_ids]
+            _candidats_vk_id = []
+            for candidate_id in _candidats_ids:
+                _candidat = _database.find_date('Candidate',f'Candidate.id == {candidate_id}')[0]
+                _candidats_vk_id.append(_candidat.vk_id)
+            _candidate_info = []
+            for i in _candidats_vk_id:
+                _user_info = vk_request.users_info(i)
+                _first_name = _user_info['first_name']
+                _last_name = _user_info['last_name']
+                _link = f'https://vk.com/id{i}'
+                _candidate_info.append(f'{_first_name} {_last_name}: {_link}')
+            _candidate_info = '\n'.join(_candidate_info)
+            return {"message": f'{_candidate_info}'}
+
         elif message.upper() == 'ОЧИСТИТЬ':
             clear_db(get_engine(dbname=dbname, password=password))
 
