@@ -5,11 +5,11 @@ from .model import Users, Candidate, BlackLists, Likes, Base
 TABLE = {'Users': Users, 'Candidate': Candidate, 'BlackLists': BlackLists, 'Likes': Likes}
 
 
-def get_engine (dbname, password, login='postgres'):
+def get_engine(dbname, password, login='postgres'):
 
     DSN = f"postgresql://{login}:{password}@localhost:5432/{dbname}"
     engine = sqlalchemy.create_engine(DSN)
-    return (engine)
+    return engine
 
 
 def create_tables(engine):
@@ -37,38 +37,40 @@ class Database:
         self.session.add(result)
         self.session.commit()
 
-    def add_candidate (self,vk_id:int,city:int,age:int,gender:int):
-        result = Candidate(vk_id = vk_id,city = city,age = age,gender = gender)
+    def add_candidate(self, vk_id: int, city: int, age: int, gender: int):
+        result = Candidate(vk_id=vk_id, city=city, age=age, gender=gender)
         self.session.add(result)
         # self.session.commit()
 
     def session_commit(self):
         self.session.commit()
 
-    def add_like(self,user_id:int,candidate_id:int):
-        find_black = self.find_date('BlackLists',f'(BlackLists.user_id == {user_id}) & (BlackLists.candidate_id == {candidate_id})')
-        find_like = self.find_date('Likes',f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
+    def add_like(self, user_id: int, candidate_id: int):
+        find_black = self.find_date('BlackLists', f'(BlackLists.user_id == {user_id}) & '
+                                                  f'(BlackLists.candidate_id == {candidate_id})')
+        find_like = self.find_date('Likes', f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
         if not find_like:
-            result = Likes(user_id = user_id,candidate_id = candidate_id)
+            result = Likes(user_id=user_id, candidate_id=candidate_id)
             self.session.add(result)
             self.session.commit()
         if find_black:
-            self.session.query(BlackLists).filter((BlackLists.user_id == user_id) & (BlackLists.candidate_id == candidate_id)).delete()
+            self.session.query(BlackLists).filter((BlackLists.user_id == user_id) &
+                                                  (BlackLists.candidate_id == candidate_id)).delete()
             self.session.commit()
-            
 
-    def add_black_list (self,user_id:int,candidate_id:int):
-        find_black = self.find_date('BlackLists',f'(BlackLists.user_id == {user_id}) & (BlackLists.candidate_id == {candidate_id})')
-        find_like = self.find_date('Likes',f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
+    def add_black_list(self, user_id: int, candidate_id: int):
+        find_black = self.find_date('BlackLists', f'(BlackLists.user_id == {user_id}) & '
+                                                  f'(BlackLists.candidate_id == {candidate_id})')
+        find_like = self.find_date('Likes', f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
         if not find_black:
-            result = BlackLists(user_id = user_id,candidate_id = candidate_id)
+            result = BlackLists(user_id=user_id, candidate_id=candidate_id)
             self.session.add(result)
             self.session.commit()
         if find_like:
             self.session.query(Likes).filter((Likes.user_id == user_id) & (Likes.candidate_id == candidate_id)).delete()
             self.session.commit()
     
-    def find_date (self,table:str,search_function:str):
+    def find_date(self, table: str, search_function: str):
         """table: Users, Candidate, BlackLists, Likes"""
         find_result = self.session.query(TABLE[table]).filter(eval(search_function))
         find_result = find_result.all()
@@ -100,10 +102,9 @@ class Database:
 
     def get_last_message_id(self, vk_id: int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
-        # result = self.session.query(Candidate.vk_id).filter(Candidate.vk_id == vk_id).all()
         return result[0].last_message_id if result.all() else None
 
-    def check(self, table, vk_id:int):  
+    def check(self, table, vk_id: int):
 
         """table: Users, Candidate, BlackLists, Likes"""
         result = self.session.query(TABLE[table]).filter(TABLE[table].vk_id == vk_id)
@@ -112,9 +113,9 @@ class Database:
 
     def re_write(self, vk_id, count=None, city=None, last_message_id=None):
 
-        id = self.get_user_id(vk_id=vk_id)
+        user_id = self.get_user_id(vk_id=vk_id)
 
-        i = self.session.query(Users).get(id)
+        i = self.session.query(Users).get(user_id)
 
         if last_message_id is not None:
             i.last_message_id = last_message_id
@@ -124,4 +125,3 @@ class Database:
             i.count = count
         self.session.add(i)
         self.session.commit()
-
