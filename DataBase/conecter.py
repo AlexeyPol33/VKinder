@@ -16,7 +16,7 @@ def calculate_age(bdate):
     return today.year - int(result.group(3)) - ((today.month, today.day) < (int(result.group(2)), int(result.group(1))))
 
 
-def insert(user_id, city=None):
+def insert(user_id, random_id, city=None):
 
     user_info = vk_request.users_info(user_id)
     city = user_info.get('city') if city is None else city  # TODO Возникает ошибка ключа
@@ -56,7 +56,7 @@ def insert(user_id, city=None):
     count = _database.session.query(Candidate.id).filter(Candidate.city == city)[0][0]
 
     if not _database.check('Users', user_id):
-        _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=count)
+        _database.add_user(vk_id=user_id, city=city, age=age, gender=gender, count=count, random_id=random_id)
         print(f'Зареган новенький с id = { _database.get_user_id(user_id) }')
     else:
         print(f"Уже был и посмотрел до {_database.get_user_count(user_id)}")

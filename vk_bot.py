@@ -32,13 +32,14 @@ _database = Database(engine=get_engine(dbname=dbname, password=password))
 
 class VkBot:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, random_id):
         print("\nСоздан объект бота!")
 
         self._USER_ID = user_id
         self._USERNAME = vk_request.users_info(user_id)['first_name']
         self._CITY = vk_request.users_info(user_id).get('city')
         self.page_size = 5
+        self.random_id = random_id
         if self._CITY is None:
             if _database.check('Users', self._USER_ID):
                 self._CITY = _database.get_user_city(self._USER_ID)
@@ -49,10 +50,10 @@ class VkBot:
 
     def insert_data(self, city_id=None):
         if city_id is None:
-            insert(self._USER_ID, self._CITY)
+            insert(user_id=self._USER_ID, random_id=self.random_id, city=self._CITY)
         else:
             self._CITY = city_id
-            insert(self._USER_ID, self._CITY)
+            insert(user_id=self._USER_ID, random_id=self.random_id, city=self._CITY)
 
     def new_message(self, message):
 
@@ -85,6 +86,10 @@ class VkBot:
 
         # Фото
         elif message.upper() in (self._COMMANDS[3], self._COMMANDS[4], self._COMMANDS[5]):
+
+            if message.upper() == "НАЧАТЬ":
+
+                pass
 
             print('получение кандидатов')
 
@@ -138,3 +143,8 @@ class VkBot:
         # cities = {city['title']: city['id'] for city in cities}
 
         return cities
+
+    def get_last_message_id(self):
+        last_id = _database.get_last_message_id(self._USER_ID)
+
+        return last_id

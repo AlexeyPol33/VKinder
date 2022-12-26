@@ -32,8 +32,8 @@ class Database:
         Session = sessionmaker(bind=self.engin)
         self.session = Session()
 
-    def add_user(self, vk_id: int, city: int, age: int, gender: int, count: int):
-        result = Users(vk_id=vk_id, city=city, age=age, gender=gender, count=count)
+    def add_user(self, vk_id: int, city: int, age: int, gender: int, count: int, random_id: int):
+        result = Users(vk_id=vk_id, city=city, age=age, gender=gender, count=count, last_message_id=random_id)
         self.session.add(result)
         self.session.commit()
 
@@ -86,6 +86,11 @@ class Database:
         for i in result:
             yield i[0]
 
+    def get_last_message_id(self, vk_id: int):
+        result = self.session.query(Users).filter(Users.vk_id == vk_id)
+        # result = self.session.query(Candidate.vk_id).filter(Candidate.vk_id == vk_id).all()
+        return result[0].last_message_id if result.all() else None
+
     def check(self, table, vk_id:int):  
 
         """table: Users, Candidate, BlackLists, Likes"""
@@ -93,12 +98,14 @@ class Database:
         res = self.session.query(result.exists()).scalar()
         return res
 
-    def re_write(self, vk_id, count=None, city=None):
+    def re_write(self, vk_id, count=None, city=None, last_message_id=None):
 
         id = self.get_user_id(vk_id=vk_id)
 
         i = self.session.query(Users).get(id)
 
+        if last_message_id is not None:
+            i.last_message_id = last_message_id
         if city is not None:
             i.city = city
         if count is not None:

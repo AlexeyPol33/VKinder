@@ -14,6 +14,7 @@ class Users(Base):
     age = Column(SmallInteger)
     gender = Column(Integer)
     count = Column(Integer)
+    last_message_id = Column(Integer)
 
 
 class Candidate(Base):

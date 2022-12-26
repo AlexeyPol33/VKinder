@@ -35,30 +35,35 @@ if __name__ == '__main__':
                     if 'callback' not in event.obj.client_info['button_actions']:
                         print(f'Клиент {event.obj.message["from_id"]} не поддерж. callback')
 
+                    random_id = get_random_id()
                     user_id = event.obj.message['from_id']
                     user_text = event.obj.message['text']
-                    bot = VkBot(user_id)
+                    bot = VkBot(user_id, random_id)
                     new_message = bot.new_message(user_text)
                     message_text = new_message.get('message')
                     message_attachment = new_message.get('attachment')
                     message_keyboard = new_message.get('keyboard')
 
-                    vk.messages.send(
+                    last_id = vk.messages.send(
                         user_id=user_id,
-                        random_id=get_random_id(),
+                        random_id=random_id,
                         peer_id=user_id,
                         keyboard=message_keyboard,
                         message=message_text,
                         attachment=message_attachment)
 
+                    last_message_id = event.obj['message']['conversation_message_id'] + 1
+                    if _database.check('Users', user_id):
+                        _database.re_write(vk_id=user_id, last_message_id=last_message_id)
                     print('Text: ', event.obj.message['text'])
                     print("-------------------")
 
         # обрабатываем клики по callback кнопкам
         elif event.type == VkBotEventType.MESSAGE_EVENT:
             user_id = event.obj.peer_id
-            bot = VkBot(user_id)
+            bot = VkBot(user_id, random_id=event.obj.conversation_message_id)
 
+            # if event.obj.conversation_message_id == bot.get_last_message_id():
             # если это одно из 3х встроенных действий:
             if isinstance(event.object.payload.get('type'), int):
                 # отправляем серверу указания как какую из кнопок обработать. Это заложено в
@@ -77,61 +82,85 @@ if __name__ == '__main__':
                     conversation_message_id=event.obj.conversation_message_id,
                     keyboard=message_keyboard)
 
-                # r = vk.messages.sendMessageEventAnswer(
-                #     event_id=event.object.event_id,
-                #     user_id=event.object.user_id,
-                #     peer_id=event.object.peer_id,
-                #     event_data=json.dumps(event.object.payload))
             # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
             # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
             elif event.object.payload.get('type') == 'like':
                 print(f'New calling button from {event.obj.peer_id}')
+                print(f'New calling message: {event.obj.message_id}')
                 print(f'New calling message: {event.obj.conversation_message_id}')
+                if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                like(user_id)
-                count = _database.get_user_count(user_id)
-                count += 1
-                _database.re_write(user_id, count=count)
-                user_text = event.object.payload.get('type')
-                new_message = bot.new_message(user_text)
-                message_text = new_message.get('message')
-                message_attachment = new_message.get('attachment')
-                message_keyboard = new_message.get('keyboard')
+                    like(user_id)
+                    count = _database.get_user_count(user_id)
+                    count += 1
+                    _database.re_write(user_id, count=count)
+                    user_text = event.object.payload.get('type')
+                    new_message = bot.new_message(user_text)
+                    message_text = new_message.get('message')
+                    message_attachment = new_message.get('attachment')
+                    message_keyboard = new_message.get('keyboard')
 
-                last_id = vk.messages.edit(
-                    peer_id=user_id,
-                    message=message_text,
-                    attachment=message_attachment,
-                    conversation_message_id=event.obj.conversation_message_id,
-                    keyboard=message_keyboard)
+                    last_id = vk.messages.edit(
+                        peer_id=user_id,
+                        message=message_text,
+                        attachment=message_attachment,
+                        conversation_message_id=event.obj.conversation_message_id,
+                        keyboard=message_keyboard)
 
-                print(f'Call button: {event.object.payload.get("type")}')
-                print("-------------------")
+                    print(f'Call button: {event.object.payload.get("type")}')
+                    print("-------------------")
+                else:
+                    random_id = get_random_id()
+                    message_text = 'Данное сообщение устарело. Нажмите "Начать"'
+
+                    last_id = vk.messages.send(
+                        user_id=user_id,
+                        random_id=random_id,
+                        peer_id=user_id,
+                        message=message_text)
+
+                    last_message_id = bot.get_last_message_id() + 1
+                    if _database.check('Users', user_id):
+                        _database.re_write(vk_id=user_id, last_message_id=last_message_id)
 
             elif event.object.payload.get('type') == 'black_list':
                 print(f'New calling button from {event.obj.peer_id}')
                 print(f'New calling message: {event.obj.conversation_message_id}')
+                if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                black_list(user_id)
-                count = _database.get_user_count(user_id)
-                count += 1
-                _database.re_write(user_id, count=count)
-                user_text = event.object.payload.get('type')
-                new_message = bot.new_message(user_text)
-                message_text = new_message.get('message')
-                message_attachment = new_message.get('attachment')
-                message_keyboard = new_message.get('keyboard')
+                    black_list(user_id)
+                    count = _database.get_user_count(user_id)
+                    count += 1
+                    _database.re_write(user_id, count=count)
+                    user_text = event.object.payload.get('type')
+                    new_message = bot.new_message(user_text)
+                    message_text = new_message.get('message')
+                    message_attachment = new_message.get('attachment')
+                    message_keyboard = new_message.get('keyboard')
 
-                last_id = vk.messages.edit(
-                    peer_id=user_id,
-                    message=message_text,
-                    attachment=message_attachment,
-                    conversation_message_id=event.obj.conversation_message_id,
-                    keyboard=message_keyboard)
+                    last_id = vk.messages.edit(
+                        peer_id=user_id,
+                        message=message_text,
+                        attachment=message_attachment,
+                        conversation_message_id=event.obj.conversation_message_id,
+                        keyboard=message_keyboard)
 
-                print(f'Call button: {event.object.payload.get("type")}')
-                print("-------------------")
+                    print(f'Call button: {event.object.payload.get("type")}')
+                    print("-------------------")
+                else:
+                    random_id = get_random_id()
+                    message_text = 'Данное сообщение устарело. Нажмите "Начать"'
+
+                    last_id = vk.messages.send(
+                        user_id=user_id,
+                        random_id=random_id,
+                        peer_id=user_id,
+                        message=message_text)
+
+                    last_message_id = bot.get_last_message_id() + 1
+                    if _database.check('Users', user_id):
+                        _database.re_write(vk_id=user_id, last_message_id=last_message_id)
 
             else:
                 city = event.object.payload.get('type')
@@ -152,4 +181,3 @@ if __name__ == '__main__':
                     attachment=message_attachment,
                     conversation_message_id=event.obj.conversation_message_id,
                     keyboard=message_keyboard)
-
