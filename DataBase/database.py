@@ -46,15 +46,27 @@ class Database:
         self.session.commit()
 
     def add_like(self,user_id:int,candidate_id:int):
-        result = Likes(user_id = user_id,candidate_id = candidate_id)
-        self.session.add(result)
-        self.session.commit()
+        find_black = self.find_date('BlackLists',f'(BlackLists.user_id == {user_id}) & (BlackLists.candidate_id == {candidate_id})')
+        find_like = self.find_date('Likes',f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
+        if not find_like:
+            result = Likes(user_id = user_id,candidate_id = candidate_id)
+            self.session.add(result)
+            self.session.commit()
+        if find_black:
+            self.session.query(BlackLists).filter((BlackLists.user_id == user_id) & (BlackLists.candidate_id == candidate_id)).delete()
+            self.session.commit()
+            
 
     def add_black_list (self,user_id:int,candidate_id:int):
-        result = BlackLists(user_id = user_id,candidate_id = candidate_id)
-        self.session.add(result)
-        self.session.commit()
-        pass
+        find_black = self.find_date('BlackLists',f'(BlackLists.user_id == {user_id}) & (BlackLists.candidate_id == {candidate_id})')
+        find_like = self.find_date('Likes',f'(Likes.user_id == {user_id}) & (Likes.candidate_id == {candidate_id})')
+        if not find_black:
+            result = BlackLists(user_id = user_id,candidate_id = candidate_id)
+            self.session.add(result)
+            self.session.commit()
+        if find_like:
+            self.session.query(Likes).filter((Likes.user_id == user_id) & (Likes.candidate_id == candidate_id)).delete()
+            self.session.commit()
     
     def find_date (self,table:str,search_function:str):
         """table: Users, Candidate, BlackLists, Likes"""
@@ -105,3 +117,4 @@ class Database:
             i.count = count
         self.session.add(i)
         self.session.commit()
+
