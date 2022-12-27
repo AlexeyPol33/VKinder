@@ -8,6 +8,38 @@ from tokens_file import dbname, password, access_token
 _database = Database(engine=get_engine(dbname=dbname, password=password))
 vk_request = VK(access_token=access_token)
 
+class LikeBlacklist:
+    _database = Database(engine=get_engine(dbname=dbname, password=password))
+    def __init__(self) -> None:
+        self.my_viewed_list = []
+        pass
+
+    def viewed_list(self,candidate_id):
+
+        self.my_viewed_list.append(candidate_id)
+
+        if len(self.my_viewed_list) > 2:
+            del self.my_viewed_list[0]
+
+
+    def like(self,user_id):
+
+        count = _database.get_user_count(user_id) - 1
+        city = _database.get_user_city(user_id)
+        people = [people for people in _database.get_candidate(city)]
+        candidate_id = people[count]
+        _database.add_like(_database.get_user_id(user_id), _database.get_user_candidate_id(candidate_id))
+
+
+    def black_list(self,user_id):
+
+        count = _database.get_user_count(user_id) - 1
+        city = _database.get_user_city(user_id)
+        people = [people for people in _database.get_candidate(city)]
+        candidate_id = people[count]
+        _database.add_black_list(_database.get_user_id(user_id), _database.get_user_candidate_id(candidate_id))
+
+
 
 def calculate_age(bdate):
 

@@ -5,13 +5,14 @@ from buttons import keyboard, city_keyboard, change_candidates_page
 # --
 from vk_bot import vk, VkBot, longpoll
 # --
+from DataBase.conecter import BlackLists, LikeBlacklist
 
-from DataBase.like_blacklist import *
 from DataBase.database import *
 from tokens_file import dbname, password
 
 if __name__ == '__main__':
 
+    like_black_list = LikeBlacklist()
     pages = ['<<', '>>']
     engine = get_engine(dbname=dbname, password=password)
     _database = Database(engine=engine)
@@ -122,7 +123,7 @@ if __name__ == '__main__':
                     print(f'New calling message: {event.obj.conversation_message_id}')
                     if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                        like(user_id)
+                        like_black_list.like(user_id)
                         count = _database.get_user_count(user_id)
                         count += 1
                         _database.re_write(user_id, count=count)
@@ -160,7 +161,7 @@ if __name__ == '__main__':
                     print(f'New calling message: {event.obj.conversation_message_id}')
                     if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                        black_list(user_id)
+                        like_black_list.black_list(user_id)
                         count = _database.get_user_count(user_id)
                         count += 1
                         _database.re_write(user_id, count=count)

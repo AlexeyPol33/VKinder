@@ -1,6 +1,5 @@
 from DataBase.database import *
-from DataBase.like_blacklist import viewed_list
-from DataBase.conecter import insert
+from DataBase.conecter import insert, LikeBlacklist
 
 
 from vk_requests import VK
@@ -42,6 +41,7 @@ class VkBot:
         self._CITY = user_info.get('city')
         self.page_size = 5
         self.random_id = random_id
+        self.like_black_list = LikeBlacklist()
         if self._CITY is None:
             if _database.check('Users', self._USER_ID):
                 self._CITY = _database.get_user_city(self._USER_ID)
@@ -93,7 +93,7 @@ class VkBot:
             city = self._CITY
             people = [people for people in _database.get_candidate(city)]
             find_candidate_id = people[count]
-            viewed_list(find_candidate_id)
+            self.like_black_list.viewed_list(find_candidate_id)
             user_info = vk_request.users_info(find_candidate_id)
             first_name = user_info['first_name']
             last_name = user_info['last_name']
