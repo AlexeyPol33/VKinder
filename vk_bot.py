@@ -73,17 +73,12 @@ class VkBot:
         # Привет
         elif message.upper() == self._COMMANDS[0]:
 
-            return {"message": f"Привет-привет, {self._USERNAME}!"}
-
-        # Время
-        elif message.upper() == self._COMMANDS[1]:
-
-            return {"message": f"{self._get_time()}"}
+            return {"message": f"Привет-привет, {self._USERNAME}!", 'keyboard': keyboard}
 
         # Пока
         elif message.upper() == self._COMMANDS[2]:
 
-            return {"message": f"Пока, {self._USERNAME}("}
+            return {"message": f"Пока, {self._USERNAME}(", 'keyboard': keyboard}
 
         # Начать, like, black_list
         elif message.upper() in (self._COMMANDS[3], self._COMMANDS[4], self._COMMANDS[5]):
@@ -146,16 +141,14 @@ class VkBot:
                 return {"message": 'Для начала нажмите кнопку "Начать.\nИли отправьте сообщение со словом "Начать"',
                         'keyboard': keyboard}
 
-            return {"message": "Не понимаю о чем вы...", 'keyboard': keyboard}
+            message_text = "Не понимаю о чем вы...\n" \
+                           "Вот скисок команд:\n" \
+                           "Привет - приветствие от бота;\n" \
+                           "Пока - прощание от бота;\n" \
+                           "Начать - запуск приложения;\n" \
+                           "Избранное - показ кандидатов из списка понравившихся;"
 
-    @staticmethod
-    def _get_time():
-
-        date = datetime.datetime.now().strftime("%d.%m.%Y")
-        time = datetime.datetime.now().strftime("%H:%M")
-        now = f'Текущая дата: {date}\nТекущее время: {time}'
-
-        return now
+            return {"message": message_text, 'keyboard': keyboard}
 
     @staticmethod
     def get_cities(home_town) -> list:
