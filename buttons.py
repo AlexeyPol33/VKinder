@@ -10,6 +10,17 @@ keyboard_1.add_callback_button(label='❌', color=VkKeyboardColor.SECONDARY, pay
 keyboard_1.add_callback_button(label='❤', color=VkKeyboardColor.SECONDARY, payload={"type": "like"})
 
 
+def change_candidates_page(page_size: int):
+
+    keyboard_3 = VkKeyboard(**settings)
+    keyboard_3.add_callback_button(label="<<", color=VkKeyboardColor.SECONDARY,
+                                   payload={"type": 'change_page', "size": (page_size - 5) // 5})
+    keyboard_3.add_callback_button(label=">>", color=VkKeyboardColor.SECONDARY,
+                                   payload={"type": 'change_page', "size": (page_size + 5) // 5})
+
+    return keyboard_3
+
+
 def city_keyboard(cities: list, home_town: str, page_size: int):
 
     start = page_size - 5
@@ -50,11 +61,11 @@ def get_but(text, color):
 
 
 keyboard = {
-    "one_time" : False,
-    "buttons" : [
+    "one_time": False,
+    "buttons": [
         [get_but('Начать', 'positive'), get_but('Избранное', 'positive')],
         [get_but('Привет', 'positive'), get_but('Пока', 'positive')]
     ]
 }
-keyboard = json.dumps(keyboard, ensure_ascii = False).encode('utf-8')
+keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
 keyboard = str(keyboard.decode('utf-8'))

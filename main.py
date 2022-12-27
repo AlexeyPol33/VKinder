@@ -1,6 +1,6 @@
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotEventType
-from buttons import city_keyboard
+from buttons import city_keyboard, change_candidates_page
 
 # --
 from vk_bot import vk, VkBot, longpoll
@@ -60,24 +60,49 @@ if __name__ == '__main__':
             try:
                 bot = VkBot(user_id, random_id=event.obj.conversation_message_id)
 
+                if event.object.payload.get('type') == 'change_page':
+
+                    bot.page_size = bot.page_size * event.object.payload.get('size')
+                    page_size = bot.page_size
+                    user_text = 'Избранное'
+                    new_message = bot.new_message(user_text)
+                    message_text = new_message['message']
+                    message_keyboard = change_candidates_page(
+                        page_size=page_size
+                    )
+
+                    last_id = vk.messages.edit(
+                        peer_id=user_id,
+                        message=message_text,
+                        conversation_message_id=event.obj.conversation_message_id,
+                        keyboard=message_keyboard.get_keyboard())
+
+                    pass
                 # если это одно из 3х встроенных действий:
-                if isinstance(event.object.payload.get('type'), int):
+                elif isinstance(event.object.payload.get('type'), int):
                     # отправляем серверу указания как какую из кнопок обработать. Это заложено в
                     # payload каждой callback-кнопки при ее создании.
                     # Но можно сделать иначе: в payload положить свои собственные
                     # идентификаторы кнопок, а здесь по ним определить
                     # какой запрос надо послать. Реализован первый вариант.
 
+                    bot.page_size = bot.page_size * event.object.payload.get('type')
+                    page_size = bot.page_size
                     home_town = event.object.payload.get('home')
                     cities = bot.get_cities(home_town=home_town)
-                    message_keyboard = city_keyboard(cities=cities, home_town=home_town,
-                                                     page_size=bot.page_size * event.object.payload.get('type'))
+                    message_text = 'Выберите нужный город:' if (page_size - 5) in range(len(cities)) \
+                        else 'Вы ушли слишком далеко)'
+                    message_keyboard = city_keyboard(
+                        cities=cities,
+                        home_town=home_town,
+                        page_size=page_size
+                    ).get_keyboard()
 
                     last_id = vk.messages.edit(
                         peer_id=user_id,
-                        message='Выберите город:',
+                        message=message_text,
                         conversation_message_id=event.obj.conversation_message_id,
-                        keyboard=message_keyboard.get_keyboard())
+                        keyboard=message_keyboard)
 
                 # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
                 # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
