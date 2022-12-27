@@ -1,6 +1,6 @@
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotEventType
-from buttons import city_keyboard, change_candidates_page
+from buttons import keyboard, city_keyboard, change_candidates_page
 
 # --
 from vk_bot import vk, VkBot, longpoll
@@ -40,6 +40,16 @@ if __name__ == '__main__':
                     message_attachment = new_message.get('attachment')
                     message_keyboard = new_message.get('keyboard')
 
+                    if user_text == 'Начать':
+                        pre_last_id = vk.messages.send(
+                            user_id=user_id,
+                            random_id=get_random_id(),
+                            peer_id=user_id,
+                            keyboard=keyboard,
+                            message='Вот кандидаты')
+                        last_message_id = event.obj['message']['conversation_message_id'] + 2
+                    else:
+                        last_message_id = event.obj['message']['conversation_message_id'] + 1
                     last_id = vk.messages.send(
                         user_id=user_id,
                         random_id=random_id,
@@ -48,7 +58,6 @@ if __name__ == '__main__':
                         message=message_text,
                         attachment=message_attachment)
 
-                    last_message_id = event.obj['message']['conversation_message_id'] + 1
                     if _database.check('Users', user_id):
                         _database.re_write(vk_id=user_id, last_message_id=last_message_id)
                     print('Text: ', event.obj.message['text'])
