@@ -2,6 +2,7 @@ from DataBase.database import *
 from DataBase.like_blacklist import viewed_list
 from DataBase.conecter import insert
 
+
 from vk_requests import VK
 from tokens_file import vk_group_token, access_token, group_id, dbname, password
 import datetime
