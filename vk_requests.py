@@ -1,5 +1,6 @@
 import requests
 import random
+import time
 
 
 class VK:
@@ -19,6 +20,7 @@ class VK:
                   'fields': 'sex, city, bdate'}
         response = requests.get(url, params={**self.params, **params})
         res = response.json()
+        time.sleep(0.2)
         return res['response'][0]
 
     def get_photo(self, user_id, album_id='profile'):
