@@ -32,15 +32,14 @@ class Database:
         Session = sessionmaker(bind=self.engin)
         self.session = Session()
 
-    def add_user(self, vk_id: int, city: int, age: int, gender: int, count: int, random_id: int):
-        result = Users(vk_id=vk_id, city=city, age=age, gender=gender, count=count, last_message_id=random_id)
+    def add_user(self, vk_id: int, city: int, age: int, gender: int, count: int, last_message_id: int):
+        result = Users(vk_id=vk_id, city=city, age=age, gender=gender, count=count, last_message_id=last_message_id)
         self.session.add(result)
         self.session.commit()
 
     def add_candidate(self, vk_id: int, city: int, age: int, gender: int):
         result = Candidate(vk_id=vk_id, city=city, age=age, gender=gender)
         self.session.add(result)
-        # self.session.commit()
 
     def session_commit(self):
         self.session.commit()
@@ -77,8 +76,8 @@ class Database:
         return find_result
 
     def get_user_id(self, vk_id: int):
-        result = self.session.query(Users).filter(Users.vk_id == vk_id)
-        return result.all()[0].id
+        result = self.session.query(Users).filter(Users.vk_id == vk_id).all()
+        return result[0].id if result else None
 
     def get_user_city(self, vk_id: int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
@@ -116,8 +115,11 @@ class Database:
                                     f'BlackLists.user_id == {self.get_user_id(user_id)}')
         black_list = [i.candidate_id for i in black_list]
         union_list = likes + black_list
-        result = self.session.query(Candidate.vk_id, Candidate.id, Candidate.age).filter(Candidate.city == city,
-                                                                          Candidate.gender == gender).all()
+        result = self.session.query(
+            Candidate.vk_id,
+            Candidate.id,
+            Candidate.age).filter(Candidate.city == city,
+                                  Candidate.gender == gender).all()
         for i in result:
             if i[1] not in union_list and i[2] in (age-1, age, age+1):
                 yield i[0]

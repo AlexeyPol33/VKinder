@@ -1,8 +1,13 @@
 from DataBase.database import *
-from DataBase.like_blacklist import viewed_list
-from DataBase.conecter import insert
+from DataBase.conecter import insert, LikeBlacklist
 
 from vk_package.vk_requests import VK
+
+# vk_group_token - token from your group with access rights to messages
+# access_token - token from your vk app
+# group_id - id of your group
+# dbname - name of your postgres DB
+# password - password of your postgres DB
 from tokens_file import vk_group_token, access_token, group_id, dbname, password
 
 from buttons import keyboard_1, keyboard, city_keyboard, change_candidates_page
@@ -10,15 +15,11 @@ from buttons import keyboard_1, keyboard, city_keyboard, change_candidates_page
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
-# Общие
-GROUP_ID = group_id
+
+GROUP_ID: int = group_id
 GROUP_TOKEN = vk_group_token
 API_VERSION = '5.131'
 
-# виды callback-кнопок
-CALLBACK_TYPES = ('show_snackbar', 'open_link')
-
-# Запускаем бот
 vk_session = VkApi(token=GROUP_TOKEN, api_version=API_VERSION)
 vk = vk_session.get_api()
 longpoll = VkBotLongPoll(vk_session, group_id=GROUP_ID)
@@ -30,7 +31,7 @@ _database = Database(engine=get_engine(dbname=dbname, password=password))
 
 class VkBot:
 
-    def __init__(self, user_id, random_id):
+    def __init__(self, user_id, last_message_id):
 
         print("\nСоздан объект бота!")
 
@@ -39,22 +40,23 @@ class VkBot:
         self._USERNAME = user_info['first_name']
         self._CITY = user_info.get('city')
         self.page_size = 5
-        self.random_id = random_id
+        self.last_message_id = last_message_id
+        self.like_black_list = LikeBlacklist()
         if self._CITY is None:
             if _database.check('Users', self._USER_ID):
                 self._CITY = _database.get_user_city(self._USER_ID)
         else:
             self._CITY = self._CITY.get('id')
 
-        self._COMMANDS = ["ПРИВЕТ", "ВРЕМЯ", "ПОКА", "НАЧАТЬ", 'BLACK_LIST', 'LIKE']
+        self._COMMANDS = ["ПРИВЕТ", "ВРЕМЯ", "ПОКА", "НАЧАТЬ", 'BLACK_LIST', 'LIKE', 'ИЗБРАННОЕ']
 
     def insert_data(self, city_id=None):
 
         if city_id is None:
-            insert(user_id=self._USER_ID, random_id=self.random_id, city=self._CITY)
+            insert(user_id=self._USER_ID, last_message_id=self.last_message_id, city=self._CITY)
         else:
             self._CITY = city_id
-            insert(user_id=self._USER_ID, random_id=self.random_id, city=self._CITY)
+            insert(user_id=self._USER_ID, last_message_id=self.last_message_id, city=self._CITY)
 
     def new_message(self, message):
 
@@ -90,7 +92,7 @@ class VkBot:
             count = _database.get_user_count(self._USER_ID) - 1
             people = [people for people in _database.get_candidate(user_id=self._USER_ID)]
             find_candidate_id = people[count]
-            viewed_list(find_candidate_id)
+            self.like_black_list.viewed_list(find_candidate_id)
             user_info = vk_request.users_info(find_candidate_id)
             first_name = user_info['first_name']
             last_name = user_info['last_name']
@@ -103,8 +105,11 @@ class VkBot:
                     'keyboard': message_keyboard}
 
         # Избранное
-        elif message.upper() == 'ИЗБРАННОЕ':
+        elif message.upper() == self._COMMANDS[6]:
+            message_keyboard = change_candidates_page(self.page_size).get_keyboard()
             _candidats_ids = _database.find_date('Likes', f'Likes.user_id == {_database.get_user_id(self._USER_ID)}')
+            if not _candidats_ids:
+                return {'message': 'Вы пока никого не добавили', 'keyboard': message_keyboard}
             _candidats_ids = [i.candidate_id for i in _candidats_ids]
             _candidats_vk_id = []
             for candidate_id in _candidats_ids:
@@ -124,13 +129,8 @@ class VkBot:
                     _candidate_info.append(f'{_first_name} {_last_name}: {_link}')
             _candidate_info = 'Избранное:\n' + '\n'.join(_candidate_info) if _candidate_info \
                 else 'Вы ушли слишком далеко)'
-            message_keyboard = change_candidates_page(self.page_size).get_keyboard()
+
             return {"message": f'{_candidate_info}', 'keyboard': message_keyboard}
-
-        elif message.upper() == 'ОЧИСТИТЬ':
-            clear_db(get_engine(dbname=dbname, password=password))
-
-            return {"message": "Таблица очищена"}
 
         else:
             if not _database.check('Users', self._USER_ID):
@@ -148,14 +148,14 @@ class VkBot:
             return {"message": message_text, 'keyboard': keyboard}
 
     @staticmethod
-    def get_cities(home_town) -> list:
+    def get_cities(home_town: str) -> list:
 
         city_name = home_town
         cities = vk_request.get_cities_id(city_name)['response']['items']
 
         return cities
 
-    def get_last_message_id(self):
+    def get_last_message_id(self) -> int:
         last_id = _database.get_last_message_id(self._USER_ID)
 
         return last_id

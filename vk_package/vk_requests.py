@@ -14,7 +14,7 @@ class VK:
 
         return requests.get('https://api.vk.com/method/users.get', params=self.params).json()['response'][0]['id'] 
 
-    def users_info(self, user_id):
+    def users_info(self, user_id) -> dict:
         url = 'https://api.vk.com/method/users.get'
         params = {'user_ids': user_id, 
                   'fields': 'sex, city, bdate'}
@@ -23,13 +23,13 @@ class VK:
         time.sleep(0.2)
         return res['response'][0]
 
-    def get_photo(self, user_id, album_id='profile'):
+    def get_photo(self, user_id, album_id='profile') -> dict:
         url = 'https://api.vk.com/method/photos.get'
         params = {'owner_id': user_id, 'album_id': album_id, 'photo_sizes': 1, 'extended': 1}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 
-    def get_popular_photo(self, user_id):
+    def get_popular_photo(self, user_id) -> list:
         photos = self.get_photo(user_id)
         while True:
             if 'error' in photos:
@@ -50,19 +50,14 @@ class VK:
                     photos.append(photo)
         return photos
 
-    def get_people(self, city, sex, age_from, age_to):
+    def get_people(self, city, sex, age_from, age_to) -> dict:
         url = 'https://api.vk.com/method/users.search'
         params = {'fields': 'sex, city, bdate', 'city': city, 'sex': sex,
                   'age_from': age_from, 'age_to': age_to, 'count': 1000}
         response = requests.get(url, params={**self.params, **params})
         return response.json()
 
-    def send_message(self, user_id, message):
-        url = 'https://api.vk.com/method/messages.send'
-        params = {'user_id': user_id, 'message': message, 'random_id': random.randint(0, 2048)}
-        requests.put(url, params={**self.params, **params})
-
-    def get_cities_id(self, city_name):
+    def get_cities_id(self, city_name) -> dict:
         url = 'https://api.vk.com/method/database.getCities'
         params = {'country_id': 1, 'q': city_name}
         response = requests.get(url=url, params={**self.params, **params})

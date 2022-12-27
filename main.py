@@ -5,13 +5,14 @@ from buttons import keyboard, city_keyboard, change_candidates_page
 # --
 from vk_package.vk_bot import vk, VkBot, longpoll
 # --
+from DataBase.conecter import LikeBlacklist
 
-from DataBase.like_blacklist import *
 from DataBase.database import *
 from tokens_file import dbname, password
 
 if __name__ == '__main__':
 
+    like_black_list = LikeBlacklist()
     pages = ['<<', '>>']
     engine = get_engine(dbname=dbname, password=password)
     _database = Database(engine=engine)
@@ -20,7 +21,6 @@ if __name__ == '__main__':
     print("Server started")
     for event in longpoll.listen():
 
-        # отправляем меню 1го вида на любое текстовое сообщение от пользователя
         if event.type == VkBotEventType.MESSAGE_NEW:
             if event.obj.message['text'] != '':
                 if event.from_user:
@@ -34,7 +34,7 @@ if __name__ == '__main__':
                     random_id = get_random_id()
                     user_id = event.obj.message['from_id']
                     user_text = event.obj.message['text']
-                    bot = VkBot(user_id, random_id)
+                    bot = VkBot(user_id, last_message_id=random_id)
                     new_message = bot.new_message(user_text)
                     message_text = new_message.get('message')
                     message_attachment = new_message.get('attachment')
@@ -67,10 +67,12 @@ if __name__ == '__main__':
         elif event.type == VkBotEventType.MESSAGE_EVENT:
             user_id = event.obj.peer_id
             try:
-                bot = VkBot(user_id, random_id=event.obj.conversation_message_id)
+                bot = VkBot(user_id, last_message_id=event.obj.conversation_message_id)
 
                 if event.object.payload.get('type') == 'change_page':
 
+                    print(f'New callback from {user_id}')
+                    print(f'Change favorite page')
                     bot.page_size = bot.page_size * event.object.payload.get('size')
                     page_size = bot.page_size
                     user_text = 'Избранное'
@@ -85,16 +87,12 @@ if __name__ == '__main__':
                         message=message_text,
                         conversation_message_id=event.obj.conversation_message_id,
                         keyboard=message_keyboard.get_keyboard())
+                    print("-------------------")
 
-                    pass
-                # если это одно из 3х встроенных действий:
                 elif isinstance(event.object.payload.get('type'), int):
-                    # отправляем серверу указания как какую из кнопок обработать. Это заложено в
-                    # payload каждой callback-кнопки при ее создании.
-                    # Но можно сделать иначе: в payload положить свои собственные
-                    # идентификаторы кнопок, а здесь по ним определить
-                    # какой запрос надо послать. Реализован первый вариант.
 
+                    print(f'New callback from {user_id}')
+                    print(f'Change city page')
                     bot.page_size = bot.page_size * event.object.payload.get('type')
                     page_size = bot.page_size
                     home_town = event.object.payload.get('home')
@@ -112,17 +110,15 @@ if __name__ == '__main__':
                         message=message_text,
                         conversation_message_id=event.obj.conversation_message_id,
                         keyboard=message_keyboard)
+                    print("-------------------")
 
-                # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
-                # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
-                # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
                 elif event.object.payload.get('type') == 'like':
-                    print(f'New calling button from {event.obj.peer_id}')
-                    print(f'New calling message: {event.obj.message_id}')
-                    print(f'New calling message: {event.obj.conversation_message_id}')
+
+                    print(f'New callback from {event.obj.peer_id}')
+                    print(f'Calling message: {event.obj.conversation_message_id}')
                     if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                        like(user_id)
+                        like_black_list.like(user_id)
                         count = _database.get_user_count(user_id)
                         _database.re_write(user_id, count=count)
                         user_text = event.object.payload.get('type')
@@ -155,11 +151,12 @@ if __name__ == '__main__':
                             _database.re_write(vk_id=user_id, last_message_id=last_message_id)
 
                 elif event.object.payload.get('type') == 'black_list':
-                    print(f'New calling button from {event.obj.peer_id}')
-                    print(f'New calling message: {event.obj.conversation_message_id}')
+
+                    print(f'New callback from {event.obj.peer_id}')
+                    print(f'Calling message: {event.obj.conversation_message_id}')
                     if event.obj.conversation_message_id == bot.get_last_message_id():
 
-                        black_list(user_id)
+                        like_black_list.black_list(user_id)
                         count = _database.get_user_count(user_id)
                         _database.re_write(user_id, count=count)
                         user_text = event.object.payload.get('type')
@@ -178,6 +175,9 @@ if __name__ == '__main__':
                         print(f'Call button: {event.object.payload.get("type")}')
                         print("-------------------")
                     else:
+
+                        print(f'New callback from {event.obj.peer_id}')
+                        print(f'Calling old message: {event.obj.conversation_message_id}')
                         random_id = get_random_id()
                         message_text = 'Данное сообщение устарело. Нажмите "Начать"'
 
@@ -191,7 +191,13 @@ if __name__ == '__main__':
                         if _database.check('Users', user_id):
                             _database.re_write(vk_id=user_id, last_message_id=last_message_id)
 
+                        print("-------------------")
+
                 else:
+
+                    print(f'New callback from {event.obj.peer_id}')
+                    print(f'Change city')
+                    print(f'Calling message: {event.obj.conversation_message_id}')
                     city = event.object.payload.get('type')
                     home_town = event.object.payload.get('home')
                     CITIES = {city['title']: city['id'] for city in bot.get_cities(home_town=home_town)}
@@ -211,10 +217,17 @@ if __name__ == '__main__':
                         conversation_message_id=event.obj.conversation_message_id,
                         keyboard=message_keyboard)
 
+                    print("-------------------")
+
             except KeyError:
+
+                print(f'New callback from {event.obj.peer_id}')
+                print(f'Error: too many responses')
                 random_id = get_random_id()
 
                 last_id = vk.messages.edit(
                     peer_id=user_id,
                     message=f"Что-то пошло не так(\nПопробуйте начать сначала.",
                     conversation_message_id=event.obj.conversation_message_id,)
+
+                print("-------------------")
