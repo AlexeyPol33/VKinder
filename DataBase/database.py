@@ -84,6 +84,14 @@ class Database:
         result = self.session.query(Users).filter(Users.vk_id == vk_id)
         return result.all()[0].city
 
+    def get_user_age(self, vk_id: int):
+        result = self.session.query(Users).filter(Users.vk_id == vk_id)
+        return result.all()[0].age
+
+    def get_user_gender(self, vk_id: int):
+        result = self.session.query(Users).filter(Users.vk_id == vk_id)
+        return result.all()[0].gender
+
     def get_user_candidate_id(self, vk_id: int):
         result = self.session.query(Candidate).filter(Candidate.vk_id == vk_id)
         return result.all()[0].id
@@ -94,11 +102,25 @@ class Database:
 
         return result.all()[0].count if result.all() else None
 
-    def get_candidate(self, city):
+    def get_candidate(self, user_id):
 
-        result = self.session.query(Candidate.vk_id).filter(Candidate.city == city).all()
+        city = self.get_user_city(vk_id=user_id)
+        age = self.get_user_age(vk_id=user_id)
+        gender = self.get_user_gender(vk_id=user_id)
+        gender = 1 if gender == 2 else 2
+
+        likes = self.find_date('Likes',
+                               f'Likes.user_id == {self.get_user_id(user_id)}')
+        likes = [i.candidate_id for i in likes]
+        black_list = self.find_date('BlackLists',
+                                    f'BlackLists.user_id == {self.get_user_id(user_id)}')
+        black_list = [i.candidate_id for i in black_list]
+        union_list = likes + black_list
+        result = self.session.query(Candidate.vk_id, Candidate.id, Candidate.age).filter(Candidate.city == city,
+                                                                          Candidate.gender == gender).all()
         for i in result:
-            yield i[0]
+            if i[1] not in union_list and i[2] in (age-1, age, age+1):
+                yield i[0]
 
     def get_last_message_id(self, vk_id: int):
         result = self.session.query(Users).filter(Users.vk_id == vk_id)

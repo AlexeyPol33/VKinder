@@ -1,5 +1,5 @@
-from vk_requests import VK
-from vk_bot import *
+from vk_package.vk_bot import *
+from vk_package.vk_requests import VK
 from datetime import date
 import re
 

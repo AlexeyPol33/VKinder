@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotEventType
 from buttons import keyboard, city_keyboard, change_candidates_page
 
 # --
-from vk_bot import vk, VkBot, longpoll
+from vk_package.vk_bot import vk, VkBot, longpoll
 # --
 
 from DataBase.like_blacklist import *
@@ -124,7 +124,6 @@ if __name__ == '__main__':
 
                         like(user_id)
                         count = _database.get_user_count(user_id)
-                        count += 1
                         _database.re_write(user_id, count=count)
                         user_text = event.object.payload.get('type')
                         new_message = bot.new_message(user_text)
@@ -162,7 +161,6 @@ if __name__ == '__main__':
 
                         black_list(user_id)
                         count = _database.get_user_count(user_id)
-                        count += 1
                         _database.re_write(user_id, count=count)
                         user_text = event.object.payload.get('type')
                         new_message = bot.new_message(user_text)

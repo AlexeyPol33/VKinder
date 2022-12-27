@@ -2,9 +2,8 @@ from DataBase.database import *
 from DataBase.like_blacklist import viewed_list
 from DataBase.conecter import insert
 
-from vk_requests import VK
+from vk_package.vk_requests import VK
 from tokens_file import vk_group_token, access_token, group_id, dbname, password
-import datetime
 
 from buttons import keyboard_1, keyboard, city_keyboard, change_candidates_page
 
@@ -89,8 +88,7 @@ class VkBot:
                             'keyboard': keyboard}
                 self.insert_data()
             count = _database.get_user_count(self._USER_ID) - 1
-            city = self._CITY
-            people = [people for people in _database.get_candidate(city)]
+            people = [people for people in _database.get_candidate(user_id=self._USER_ID)]
             find_candidate_id = people[count]
             viewed_list(find_candidate_id)
             user_info = vk_request.users_info(find_candidate_id)
