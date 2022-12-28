@@ -24,7 +24,7 @@ P.s. Если название Вашего города состоит из н�
     git clone https://github.com/AlexeyPol33/VKinder
     cd VKinder
 
-### Start priject
+### Start project
 
 Для запуска проекта Вам потребуются:
 
